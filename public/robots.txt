@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ganeshkumar-profile.vercel.app/sitemap.xml

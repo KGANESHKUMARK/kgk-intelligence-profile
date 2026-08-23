@@ -1,0 +1,462 @@
+/* Inter Variable + JetBrains Mono Variable — full subset via fontsource. */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+@import 'tailwindcss';
+
+/* ============================================================================
+   ENGINEERING INTELLIGENCE PROFILE — DESIGN SYSTEM
+   Visual identity: "Ion" — graphite base, hairline grid, three signal accents.
+     jade       -> engineering / systems / execution
+     periwinkle -> AI / intelligence
+     amber      -> risk / production reality
+   ========================================================================== */
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --radius-card: 0.875rem;
+
+  --animate-drift: drift 34s linear infinite;
+  --animate-dash: dash 1.6s linear infinite;
+  --animate-pulse-ring: pulse-ring 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-scan: scan 7s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.4s linear infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes dash {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+@keyframes pulse-ring {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.12;
+    transform: scale(1.55);
+  }
+}
+@keyframes scan {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  50% {
+    opacity: 1;
+  }
+  99% {
+    transform: translateY(100%);
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------------------------------------------------------------- palettes */
+
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #08090c;
+  --bg-elev: #0d0f14;
+  --surface: #101319;
+  --surface-2: #161a22;
+  --surface-3: #1d222c;
+
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.13);
+
+  --text: #e8ebf0;
+  --text-2: #99a2b0;
+  --text-3: #616b7b;
+
+  --accent: #00d4a0;
+  --accent-soft: rgba(0, 212, 160, 0.12);
+  --accent-line: rgba(0, 212, 160, 0.32);
+  --accent-text: #2fe3b6;
+
+  --ai: #8b9dff;
+  --ai-soft: rgba(139, 157, 255, 0.12);
+  --ai-line: rgba(139, 157, 255, 0.32);
+  --ai-text: #a3b1ff;
+
+  --risk: #ffb454;
+  --risk-soft: rgba(255, 180, 84, 0.12);
+  --risk-line: rgba(255, 180, 84, 0.32);
+  --risk-text: #ffc477;
+
+  --grid: rgba(255, 255, 255, 0.028);
+  --glow: rgba(0, 212, 160, 0.16);
+  --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.04) inset, 0 8px 28px -14px rgba(0, 0, 0, 0.9);
+  --shadow-lift: 0 1px 0 0 rgba(255, 255, 255, 0.06) inset, 0 20px 48px -20px rgba(0, 0, 0, 0.95);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f7f8fa;
+  --bg-elev: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f2f4f7;
+  --surface-3: #e8ebf0;
+
+  --line: rgba(12, 16, 24, 0.09);
+  --line-strong: rgba(12, 16, 24, 0.16);
+
+  --text: #0b0e14;
+  --text-2: #4d5766;
+  --text-3: #78828f;
+
+  --accent: #00795c;
+  --accent-soft: rgba(0, 121, 92, 0.09);
+  --accent-line: rgba(0, 121, 92, 0.28);
+  --accent-text: #006a51;
+
+  --ai: #4c5bd4;
+  --ai-soft: rgba(76, 91, 212, 0.09);
+  --ai-line: rgba(76, 91, 212, 0.28);
+  --ai-text: #3f4cba;
+
+  --risk: #a45900;
+  --risk-soft: rgba(164, 89, 0, 0.09);
+  --risk-line: rgba(164, 89, 0, 0.28);
+  --risk-text: #8f4d00;
+
+  --grid: rgba(12, 16, 24, 0.035);
+  --glow: rgba(0, 121, 92, 0.1);
+  --shadow-card: 0 1px 2px rgba(12, 16, 24, 0.04), 0 8px 24px -16px rgba(12, 16, 24, 0.18);
+  --shadow-lift: 0 2px 4px rgba(12, 16, 24, 0.05), 0 18px 40px -20px rgba(12, 16, 24, 0.25);
+}
+
+/* Expose CSS vars as Tailwind utilities (bg-bg, text-text-2, border-line, ...) */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-accent-text: var(--accent-text);
+  --color-ai: var(--ai);
+  --color-ai-soft: var(--ai-soft);
+  --color-ai-line: var(--ai-line);
+  --color-ai-text: var(--ai-text);
+  --color-risk: var(--risk);
+  --color-risk-soft: var(--risk-soft);
+  --color-risk-line: var(--risk-line);
+  --color-risk-text: var(--risk-text);
+}
+
+/* ------------------------------------------------------------------- base */
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+    letter-spacing: -0.022em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border-radius: 99px;
+    border: 2px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--line-strong);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* --------------------------------------------------------------- utilities */
+
+@utility surface-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+@utility grid-bg {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@utility dot-bg {
+  background-image: radial-gradient(var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@utility mono-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+@utility text-gradient {
+  background: linear-gradient(180deg, var(--text) 25%, color-mix(in oklab, var(--text) 55%, transparent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Corner tick brackets — a recurring motif on key panels */
+@utility ticked {
+  position: relative;
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-color: var(--line-strong);
+    pointer-events: none;
+  }
+  &::before {
+    top: -1px;
+    left: -1px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+  &::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+  }
+}
+
+/* ------------------------------------------------------------------ print */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 10.5pt;
+    overflow: visible !important;
+  }
+
+  .no-print,
+  header.no-print,
+  nav {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  a {
+    text-decoration: none;
+    color: #000 !important;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+}
+
+.print-only {
+  display: none;
+}
+
+/* ------------------------------------------------------- print resume view */
+
+.print-only {
+  font-size: 10pt;
+  line-height: 1.4;
+  color: #000;
+}
+
+.print-header {
+  border-bottom: 1.5px solid #000;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+.print-header h1 {
+  font-size: 20pt;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.print-title {
+  font-size: 11pt;
+  font-weight: 600;
+  margin: 2px 0 0;
+  color: #333;
+}
+.print-contact {
+  font-size: 8.5pt;
+  margin: 4px 0 0;
+  color: #555;
+}
+
+.print-section {
+  margin-top: 10px;
+}
+.print-section h2 {
+  font-size: 11pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 0.5px solid #999;
+  padding-bottom: 2px;
+  margin: 0 0 5px;
+}
+
+.print-skill-line {
+  margin: 1px 0;
+  font-size: 9pt;
+}
+.print-skill-cat {
+  font-weight: 600;
+}
+
+.print-job {
+  margin: 6px 0;
+}
+.print-job-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.print-job-head h3 {
+  font-size: 10.5pt;
+  margin: 0;
+}
+.print-company {
+  font-size: 9pt;
+  margin: 1px 0 0;
+  color: #333;
+}
+.print-period {
+  font-size: 8.5pt;
+  color: #555;
+  white-space: nowrap;
+}
+.print-domain {
+  font-size: 8.5pt;
+  font-style: italic;
+  color: #555;
+  margin: 1px 0 3px;
+}
+.print-tech {
+  font-size: 8.5pt;
+  color: #444;
+  margin: 3px 0 0;
+}
+
+.print-section ul {
+  margin: 2px 0;
+  padding-left: 16px;
+}
+.print-section li {
+  font-size: 9pt;
+  margin: 1px 0;
+}
