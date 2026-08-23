@@ -33,3 +33,6 @@ dist-ssr
 
 # Devin
 .devin/config.local.json
+
+.vercel
+.env*
