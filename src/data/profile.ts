@@ -35,7 +35,7 @@ export interface ValueProp {
 }
 
 export const profile = {
-  name: 'Ganesh Kumar',
+  name: 'Ganeshkumar Karuppaiah',
   /** Name exactly as it appears on the resume / official documents. */
   legalName: 'Ganeshkumar K',
 

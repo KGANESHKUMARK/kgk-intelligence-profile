@@ -1,6 +1,6 @@
 # Engineering Intelligence Profile
 
-An interactive interview resume / developer portfolio for **Ganesh Kumar** — Lead AI & Full Stack Engineer with 13+ years across banking and capital markets.
+An interactive interview resume / developer portfolio for **Ganeshkumar Karuppaiah** — Lead AI & Full Stack Engineer with 13+ years across banking and capital markets.
 
 Built with React, TypeScript, Vite, Tailwind CSS v4, and Motion. Deployable as a static site on Vercel.
 
@@ -115,4 +115,4 @@ src/
 
 ## License
 
-Personal portfolio content © Ganesh Kumar. Code structure is provided as-is for personal use.
+Personal portfolio content © Ganeshkumar Karuppaiah. Code structure is provided as-is for personal use.

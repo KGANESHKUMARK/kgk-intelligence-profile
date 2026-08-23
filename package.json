@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Interactive Engineering Interview Resume — Ganesh Kumar, Lead AI & Full Stack Engineer",
+  "description": "Interactive Engineering Interview Resume — Ganeshkumar Karuppaiah, Lead AI & Full Stack Engineer",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -24,7 +24,7 @@
   <text x="80" y="120" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="16" fill="#616b7b" letter-spacing="3">ENGINEERING INTELLIGENCE PROFILE</text>
 
   <!-- name -->
-  <text x="80" y="220" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="64" font-weight="700" fill="#e8ebf0" letter-spacing="-2">Ganesh Kumar</text>
+  <text x="80" y="220" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="64" font-weight="700" fill="#e8ebf0" letter-spacing="-2">Ganeshkumar Karuppaiah</text>
 
   <!-- title -->
   <text x="80" y="280" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="32" font-weight="600" fill="url(#accent)">Lead AI &amp; Full Stack Engineer</text>
