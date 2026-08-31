@@ -77,13 +77,13 @@ export function Navbar() {
           {/* Desktop nav */}
           <ul className="hide-scrollbar mx-auto hidden items-center gap-0.5 overflow-x-auto lg:flex">
             {primarySections.map((s) => (
-              <li key={s.id}>
+              <li key={s.id} className="shrink-0">
                 <button
                   type="button"
                   onClick={() => go(s.id)}
                   aria-current={active === s.id ? 'true' : undefined}
                   className={cn(
-                    'relative rounded-lg px-3 py-2 text-[0.8125rem] font-medium whitespace-nowrap transition-colors',
+                    'relative rounded-lg px-2.5 py-2 text-[0.8125rem] font-medium whitespace-nowrap transition-colors',
                     active === s.id
                       ? 'text-[var(--text)]'
                       : 'text-[var(--text-3)] hover:text-[var(--text-2)]',
@@ -109,10 +109,10 @@ export function Navbar() {
               size="sm"
               onClick={toggleInterviewMode}
               aria-pressed={interviewMode}
+              aria-label="Toggle interview mode"
               className="hidden md:inline-flex"
             >
               <Presentation size={14} strokeWidth={2} aria-hidden="true" />
-              Interview Mode
             </Button>
 
             <button
