@@ -1,0 +1,111 @@
+import type { GlossaryTerm } from '../../../types';
+
+export const javaGlossary: GlossaryTerm[] = [
+  {
+    id: 'bucket',
+    term: 'Bucket',
+    simple: 'One slot in a hash table\u2019s internal array, where entries with the same (reduced) hash land.',
+    technical: 'An index into HashMap\u2019s internal table array, selected via hash & (capacity - 1). Holds a linked list or (since Java 8) a small red-black tree of colliding entries.',
+    keyWords: ['hash table', 'collision', 'treeification'],
+    relatedTopics: ['hashmap', 'hashcode'],
+  },
+  {
+    id: 'collision',
+    term: 'Collision',
+    simple: 'When two different keys end up in the same bucket.',
+    technical: 'Occurs when two keys produce the same bucket index after hashing, even if their hashCodes differ, since only capacity - 1 bits of the hash are used to select a bucket. Resolved via equals() within the bucket.',
+    keyWords: ['hashCode', 'equals', 'bucket'],
+    relatedTopics: ['hashmap', 'hashcode', 'equals'],
+  },
+  {
+    id: 'load-factor',
+    term: 'Load Factor',
+    simple: 'How full a HashMap is allowed to get before it grows.',
+    technical: 'A float (default 0.75) representing the fill ratio (size / capacity) that triggers a resize (capacity doubling + full rehash) when exceeded.',
+    keyWords: ['resize', 'rehash', 'capacity'],
+    relatedTopics: ['hashmap'],
+  },
+  {
+    id: 'jvm-term',
+    term: 'JVM',
+    simple: 'The engine that runs compiled Java bytecode.',
+    technical: 'The Java Virtual Machine — specified by the JVM Specification — handles class loading, bytecode verification, execution (interpretation and JIT compilation) and memory management/garbage collection.',
+    keyWords: ['bytecode', 'class loader', 'JIT'],
+    relatedTopics: ['jvm'],
+  },
+  {
+    id: 'gc-term',
+    term: 'GC (Garbage Collection)',
+    simple: 'The JVM automatically freeing memory for objects nothing uses anymore.',
+    technical: 'The process of reclaiming heap memory occupied by objects unreachable from any GC root. Most collectors (G1, ZGC, Shenandoah) are generational, collecting young objects far more often than old ones.',
+    keyWords: ['reachability', 'generational', 'G1', 'ZGC'],
+    relatedTopics: ['garbage-collection'],
+  },
+  {
+    id: 'jmm',
+    term: 'JMM (Java Memory Model)',
+    simple: 'The rulebook for what one thread is guaranteed to see of another thread\u2019s writes.',
+    technical: 'The specification (JLS Chapter 17) defining visibility and ordering guarantees between threads via happens-before relationships, underpinning volatile, synchronized, and the concurrency utilities.',
+    keyWords: ['visibility', 'ordering', 'happens-before', 'volatile'],
+    relatedTopics: ['thread', 'synchronized-vs-lock'],
+    reference: {
+      title: 'The Java Language Specification — Chapter 17: Threads and Locks',
+      url: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html',
+      source: 'Oracle',
+      type: 'official',
+      version: 21,
+    },
+  },
+  {
+    id: 'chm-term',
+    term: 'CHM (ConcurrentHashMap)',
+    simple: 'The thread-safe HashMap, minus null keys/values.',
+    technical: 'A thread-safe Map implementation using fine-grained internal locking, atomic compound operations (computeIfAbsent, merge), and weakly-consistent iterators, disallowing null keys and values.',
+    keyWords: ['thread safety', 'fine-grained locking', 'weakly consistent'],
+    relatedTopics: ['hashmap-vs-concurrenthashmap'],
+  },
+  {
+    id: 'jit-term',
+    term: 'JIT (Just-In-Time Compiler)',
+    simple: 'The part of the JVM that turns frequently-run bytecode into fast native machine code, while the program is already running.',
+    technical: 'Profiles method invocation frequency at runtime and compiles "hot" methods to optimized native code, while cold code remains interpreted — enabling adaptive optimizations unavailable to ahead-of-time compilation.',
+    keyWords: ['hot method', 'profiling', 'warm-up'],
+    relatedTopics: ['jvm'],
+  },
+  {
+    id: 'carrier-thread',
+    term: 'Carrier Thread',
+    simple: 'The real OS thread a virtual thread temporarily borrows while it\u2019s actually running.',
+    technical: 'A platform thread from the small pool the JVM uses to run virtual threads; a virtual thread mounts a carrier while runnable and unmounts when it blocks, freeing the carrier for another virtual thread.',
+    keyWords: ['virtual thread', 'mounting', 'unmounting'],
+    relatedTopics: ['virtual-threads', 'thread'],
+  },
+  {
+    id: 'pinning',
+    term: 'Pinning',
+    simple: 'When a virtual thread gets stuck to its carrier thread and can\u2019t be swapped out while blocked.',
+    technical: 'Occurs when a virtual thread executes inside a synchronized block/method or certain native calls; it cannot be unmounted, so if it blocks while pinned, its carrier thread is blocked too.',
+    keyWords: ['virtual thread', 'synchronized', 'carrier thread'],
+    relatedTopics: ['virtual-threads', 'synchronized-vs-lock'],
+  },
+  {
+    id: 'functional-interface-term',
+    term: 'Functional Interface',
+    simple: 'An interface with exactly one method to implement — the kind a lambda can fill in for.',
+    technical: 'An interface declaring exactly one abstract method (any number of default/static methods is allowed); the target type a lambda expression or method reference implements, resolved via target typing.',
+    keyWords: ['single abstract method', 'lambda', 'target typing'],
+    relatedTopics: ['lambda'],
+  },
+  {
+    id: 'terminal-operation',
+    term: 'Terminal Operation',
+    simple: 'The stream call that actually makes something happen.',
+    technical: 'A Stream operation (collect, forEach, reduce, sum, ...) that triggers traversal of the source through every prior intermediate operation; a stream is single-use and cannot be re-traversed after one.',
+    keyWords: ['stream', 'laziness', 'single-use'],
+    relatedTopics: ['stream'],
+  },
+];
+
+export function getGlossaryTermById(id: string) {
+  return javaGlossary.find((g) => g.id === id);
+}
