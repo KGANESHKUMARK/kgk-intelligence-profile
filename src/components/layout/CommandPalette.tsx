@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowRight,
+  BookOpen,
   Download,
   ExternalLink,
   Github,
+  GraduationCap,
   Linkedin,
   Mail,
   Moon,
@@ -18,6 +21,7 @@ import {
 import { sections } from '../../data/navigation';
 import { skills } from '../../data/skills';
 import { profile } from '../../data/profile';
+import { allTopics, topicRoute } from '../../learning/services/registry';
 import { useAppState } from '../../hooks/useAppState';
 import { useShare } from '../../hooks/useShare';
 import { cn, matches, scrollToSection } from '../../lib/utils';
@@ -36,6 +40,8 @@ export function CommandPalette() {
   const { paletteOpen, setPaletteOpen, theme, toggleTheme, setInterviewMode, focusSkill, printResume } =
     useAppState();
   const { share } = useShare();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [index, setIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,7 +59,13 @@ export function CommandPalette() {
       run: () => {
         close();
         setInterviewMode(false);
-        scrollToSection(s.id);
+        // Section anchors only exist on the resume portal — go there first.
+        if (location.pathname !== '/') {
+          navigate('/');
+          requestAnimationFrame(() => requestAnimationFrame(() => scrollToSection(s.id)));
+        } else {
+          scrollToSection(s.id);
+        }
       },
     }));
 
@@ -155,6 +167,45 @@ export function CommandPalette() {
       },
     ];
 
+    const learningPages: { label: string; hint: string; to: string }[] = [
+      { label: 'Java Learning Hub', hint: 'Java Engineering Lab', to: '/learning/java' },
+      { label: 'Latest Java', hint: "What's new", to: '/learning/java/latest' },
+      { label: 'Java Version Timeline', hint: 'Java 8 → 26', to: '/learning/java/versions' },
+      { label: 'Collections', hint: 'Learning category', to: '/learning/java/category/Collections' },
+      { label: 'Concurrency', hint: 'Learning category', to: '/learning/java/category/Concurrency' },
+      { label: 'JVM', hint: 'Learning category', to: '/learning/java/category/JVM' },
+      { label: 'Interview Practice', hint: 'Question bank', to: '/learning/java/interview' },
+      { label: 'Visual Flashcards', hint: '5-minute revision', to: '/learning/java/flashcards' },
+      { label: 'Visual Quiz', hint: 'Identify the concept', to: '/learning/java/quiz' },
+      { label: 'Java Glossary', hint: 'Precise definitions', to: '/learning/java/glossary' },
+    ];
+
+    const learning: Command[] = learningPages.map((page) => ({
+      id: `learning-${page.to}`,
+      label: page.label,
+      hint: page.hint,
+      group: 'Learning',
+      icon: <GraduationCap size={15} strokeWidth={1.75} aria-hidden="true" />,
+      run: () => {
+        close();
+        setInterviewMode(false);
+        navigate(page.to);
+      },
+    }));
+
+    const learningTopics: Command[] = allTopics.map((t) => ({
+      id: `learning-topic-${t.id}`,
+      label: t.title,
+      hint: `${t.category} · learning topic`,
+      group: 'Learning Topics',
+      icon: <BookOpen size={15} strokeWidth={1.75} aria-hidden="true" />,
+      run: () => {
+        close();
+        setInterviewMode(false);
+        navigate(topicRoute(t.id));
+      },
+    }));
+
     const tech: Command[] = skills.map((s) => ({
       id: `skill-${s.id}`,
       label: s.name,
@@ -167,14 +218,16 @@ export function CommandPalette() {
       },
     }));
 
-    return [...nav, ...actions, ...links, ...tech];
+    return [...nav, ...learning, ...actions, ...links, ...learningTopics, ...tech];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme, share, toggleTheme, setInterviewMode, focusSkill, printResume]);
+  }, [theme, share, toggleTheme, setInterviewMode, focusSkill, printResume, navigate, location.pathname]);
 
   const filtered = useMemo(() => {
     const list = commands.filter((c) => matches(query, c.label, c.hint, c.group));
-    // Technologies are noisy — only surface them once the user actually types.
-    return query.trim() ? list.slice(0, 40) : list.filter((c) => c.group !== 'Technologies');
+    // Technologies and learning topics are noisy — only surface them once the user types.
+    return query.trim()
+      ? list.slice(0, 40)
+      : list.filter((c) => c.group !== 'Technologies' && c.group !== 'Learning Topics');
   }, [commands, query]);
 
   const groups = useMemo(() => {

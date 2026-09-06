@@ -1,3 +1,5 @@
+import { Suspense, lazy } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppStateProvider } from './hooks/useAppState';
 import { Navbar } from './components/layout/Navbar';
 import { CommandPalette } from './components/layout/CommandPalette';
@@ -22,13 +24,17 @@ import { JdMatch } from './components/jdmatch/JdMatch';
 import { Recommendations } from './components/recommendations/Recommendations';
 import { TemplateOffer } from './components/product/TemplateOffer';
 import { PrintResume } from './components/print/PrintResume';
+import { LearningNavProvider } from './learning/hooks/useLearningNav';
+import { LearningHubEntry } from './learning/components/LearningHubEntry';
 import { Analytics } from '@vercel/analytics/react';
+
+/** The Learning Hub is fully code-split — "/" never downloads it. */
+const LearningApp = lazy(() => import('./learning/LearningApp'));
 
 function AppShell() {
   return (
     <>
       <Navbar />
-      <CommandPalette />
       <InterviewMode />
       <main id="main">
         <Hero />
@@ -53,15 +59,42 @@ function AppShell() {
       </main>
       <Footer />
       <PrintResume />
-      <Analytics />
+      <LearningHubEntry />
     </>
+  );
+}
+
+function LearningFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[var(--bg)]" role="status" aria-live="polite">
+      <span className="mono-label animate-pulse">Loading Learning Hub…</span>
+    </div>
   );
 }
 
 export default function App() {
   return (
     <AppStateProvider>
-      <AppShell />
+      <BrowserRouter>
+        <LearningNavProvider>
+          {/* Mounted above the route switch so Ctrl/Cmd+K works everywhere. */}
+          <CommandPalette />
+          <Routes>
+            <Route path="/" element={<AppShell />} />
+            <Route
+              path="/learning/*"
+              element={
+                <Suspense fallback={<LearningFallback />}>
+                  <LearningApp />
+                </Suspense>
+              }
+            />
+            {/* Unknown paths fall back to the resume portal. */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <Analytics />
+        </LearningNavProvider>
+      </BrowserRouter>
     </AppStateProvider>
   );
 }
