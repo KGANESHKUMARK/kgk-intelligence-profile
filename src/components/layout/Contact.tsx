@@ -32,7 +32,7 @@ export function Contact() {
 
       <div className="relative">
         <SectionHeader
-          index="11"
+          index="13"
           eyebrow="Contact"
           title="Let's Build Something Intelligent"
           description={profile.availability}

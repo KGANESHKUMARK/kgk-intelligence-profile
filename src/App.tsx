@@ -18,7 +18,11 @@ import { CertificationTimeline } from './components/certifications/Certification
 import { AskMeAbout } from './components/interview/AskMeAbout';
 import { TechnicalDiscussion } from './components/interview/TechnicalDiscussion';
 import { InterviewMode } from './components/interview/InterviewMode';
+import { JdMatch } from './components/jdmatch/JdMatch';
+import { Recommendations } from './components/recommendations/Recommendations';
+import { TemplateOffer } from './components/product/TemplateOffer';
 import { PrintResume } from './components/print/PrintResume';
+import { Analytics } from '@vercel/analytics/react';
 
 function AppShell() {
   return (
@@ -42,10 +46,14 @@ function AppShell() {
         <CertificationTimeline />
         <AskMeAbout />
         <TechnicalDiscussion />
+        <JdMatch />
+        <Recommendations />
         <Contact />
+        <TemplateOffer />
       </main>
       <Footer />
       <PrintResume />
+      <Analytics />
     </>
   );
 }
