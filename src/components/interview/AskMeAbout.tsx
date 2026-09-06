@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { MessageSquare, Quote } from 'lucide-react';
+import { ChevronDown, MessageSquare, Quote } from 'lucide-react';
 import { SectionHeader } from '../common/SectionHeader';
 import { askTopics, type AskTopic } from '../../data/interviewTopics';
 import { cn } from '../../lib/utils';
@@ -17,6 +17,7 @@ const categoryTone: Record<AskTopic['category'], 'accent' | 'ai' | 'risk'> = {
 
 export function AskMeAbout() {
   const [activeId, setActiveId] = useState(askTopics[0].id);
+  const [open, setOpen] = useState(false);
   const active = askTopics.find((t) => t.id === activeId) ?? askTopics[0];
 
   return (
@@ -28,6 +29,37 @@ export function AskMeAbout() {
         description="Pick a topic and I will give you the short version, plus exactly what I would point at as evidence."
       />
 
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="ask-content"
+        className="group mb-3 flex w-full items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-4 py-3 text-left transition-colors hover:border-[var(--line-strong)]"
+      >
+        <span className="text-[0.8125rem] font-medium text-[var(--text-2)]">
+          {open ? 'Hide topics' : `Show ${askTopics.length} conversation topics`}
+        </span>
+        <ChevronDown
+          size={16}
+          strokeWidth={2}
+          className={cn(
+            'shrink-0 text-[var(--text-3)] transition-transform duration-200',
+            open && 'rotate-180',
+          )}
+          aria-hidden="true"
+        />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            id="ask-content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: EASE }}
+            className="overflow-hidden"
+          >
       <motion.div
         variants={stagger(0.01, 0.02)}
         initial="hidden"
@@ -112,6 +144,9 @@ export function AskMeAbout() {
             ))}
           </div>
         </motion.div>
+      </AnimatePresence>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
