@@ -13,7 +13,10 @@ export const SECTION_IDS = [
   'constellation',
   'certifications',
   'discussion',
+  'jd-match',
+  'recommendations',
   'contact',
+  'template-offer',
 ] as const;
 
 export type SectionId = (typeof SECTION_IDS)[number];
@@ -41,7 +44,10 @@ const allSections: NavSection[] = [
   { id: 'constellation', label: 'Technology Map', index: '08' },
   { id: 'certifications', label: 'Certifications', index: '09', primary: true },
   { id: 'discussion', label: 'Technical Discussion', index: '10' },
-  { id: 'contact', label: 'Contact', index: '11', primary: true },
+  { id: 'jd-match', label: 'JD Match', index: '11', primary: true },
+  { id: 'recommendations', label: 'Recommendations', index: '12' },
+  { id: 'contact', label: 'Contact', index: '13', primary: true },
+  { id: 'template-offer', label: 'Get the Template', index: '14' },
 ];
 
 const hidden = new Set<SectionId>(
