@@ -9,6 +9,7 @@ import { useShare } from '../../hooks/useShare';
 import { useAppState } from '../../hooks/useAppState';
 import { cn, scrollToSection } from '../../lib/utils';
 import { EASE } from '../../lib/motion';
+import { trackEvent } from '../../lib/analytics';
 
 const sectionIds = sections.map((s) => s.id);
 
@@ -26,6 +27,11 @@ export function Navbar() {
       document.body.style.overflow = '';
     };
   }, [mobileOpen]);
+
+  // Fire a custom analytics event when the active section changes.
+  useEffect(() => {
+    if (active) trackEvent('section_viewed', { section: active });
+  }, [active]);
 
   const go = (id: string) => {
     setMobileOpen(false);
