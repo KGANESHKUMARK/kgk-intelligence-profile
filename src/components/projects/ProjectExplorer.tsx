@@ -8,6 +8,7 @@ import { projects, projectFilters, type Project, type ProjectTag } from '../../d
 import { tailoring } from '../../config/tailoring';
 import { cn } from '../../lib/utils';
 import { EASE, fadeUp, viewportOnce } from '../../lib/motion';
+import { trackEvent } from '../../lib/analytics';
 
 /** Honour tailoring.projectOrder when set, otherwise keep authoring order. */
 const ordered = tailoring.projectOrder.length
@@ -80,7 +81,13 @@ export function ProjectExplorer() {
               transition={{ delay: Math.min(i * 0.04, 0.2), duration: 0.3, ease: EASE }}
               className={cn(project.featured && 'xl:col-span-1')}
             >
-              <ProjectCard project={project} onOpen={() => setSelected(project)} />
+              <ProjectCard
+                project={project}
+                onOpen={() => {
+                  setSelected(project);
+                  trackEvent('project_opened', { project: project.id });
+                }}
+              />
             </motion.li>
           ))}
         </AnimatePresence>

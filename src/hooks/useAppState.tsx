@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTheme, type Theme } from './useTheme';
 import { scrollToSection } from '../lib/utils';
+import { trackEvent } from '../lib/analytics';
 
 interface AppState {
   theme: Theme;
@@ -40,6 +41,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setFocusedSkill(id);
     if (id) {
       setInterviewMode(false);
+      trackEvent('skill_clicked', { skill: id });
       requestAnimationFrame(() => scrollToSection('skills'));
     }
   }, []);
@@ -47,6 +49,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const printResume = useCallback(() => {
     setInterviewMode(false);
     setPaletteOpen(false);
+    trackEvent('resume_printed');
     // Let React commit the print-only resume view before invoking print().
     requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
   }, []);
@@ -59,7 +62,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setPaletteOpen,
       interviewMode,
       setInterviewMode,
-      toggleInterviewMode: () => setInterviewMode((v) => !v),
+      toggleInterviewMode: () =>
+        setInterviewMode((v) => {
+          if (!v) trackEvent('interview_mode', { action: 'opened' });
+          return !v;
+        }),
       focusedSkill,
       focusSkill,
       printResume,

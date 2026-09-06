@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { profile } from '../data/profile';
+import { trackEvent } from '../lib/analytics';
 
 /**
  * Share the profile via the Web Share API where available,
@@ -26,10 +27,12 @@ export function useShare() {
       if (typeof navigator.share === 'function' && (!navigator.canShare || navigator.canShare(data))) {
         await navigator.share(data);
         setStatus('shared');
+        trackEvent('profile_shared', { method: 'native' });
         return;
       }
       await navigator.clipboard.writeText(url);
       setStatus('copied');
+      trackEvent('profile_shared', { method: 'clipboard' });
     } catch (err) {
       // AbortError just means the user dismissed the native share sheet.
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -39,6 +42,7 @@ export function useShare() {
       try {
         await navigator.clipboard.writeText(url);
         setStatus('copied');
+        trackEvent('profile_shared', { method: 'clipboard' });
       } catch {
         setStatus('error');
       }

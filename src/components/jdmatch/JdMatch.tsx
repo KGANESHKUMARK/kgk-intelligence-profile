@@ -5,6 +5,7 @@ import { Section, SectionHeader } from '../common/SectionHeader';
 import { Button } from '../common/Button';
 import { analyseJd, type JdMatchResult } from '../../lib/jdMatch';
 import { fadeUp, viewportOnce } from '../../lib/motion';
+import { trackEvent } from '../../lib/analytics';
 
 type Status = 'idle' | 'analysing' | 'done';
 
@@ -25,6 +26,7 @@ export function JdMatch() {
   const runAnalyse = () => {
     if (!canAnalyse) return;
     setStatus('analysing');
+    trackEvent('jd_analysed', { words: jd.trim().split(/\s+/).filter(Boolean).length });
     // Simulated latency so the loading state is visible; the real API call
     // will replace this. The heuristic runs client-side instantly.
     setTimeout(() => {

@@ -4,6 +4,7 @@ import { Section, SectionHeader } from '../common/SectionHeader';
 import { LinkButton } from '../common/Button';
 import { templateOffer } from '../../data/templateOffer';
 import { fadeUp, viewportOnce } from '../../lib/motion';
+import { trackEvent } from '../../lib/analytics';
 
 const isPlaceholder = templateOffer.checkoutUrl.includes('REPLACE_WITH_YOUR_PRODUCT_URL');
 
@@ -98,6 +99,7 @@ export function TemplateOffer() {
                 size="lg"
                 aria-disabled={isPlaceholder}
                 className={isPlaceholder ? 'pointer-events-none opacity-60' : ''}
+                onClick={() => trackEvent('template_buy_clicked', { product: templateOffer.productName })}
               >
                 <ExternalLink size={16} strokeWidth={2} aria-hidden="true" />
                 {isPlaceholder ? 'Buy Now (link pending)' : `Buy Now · ${templateOffer.price}`}
