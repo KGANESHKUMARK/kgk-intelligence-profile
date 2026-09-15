@@ -23,6 +23,7 @@ import { InterviewMode } from './components/interview/InterviewMode';
 import { JdMatch } from './components/jdmatch/JdMatch';
 import { Recommendations } from './components/recommendations/Recommendations';
 import { TemplateOffer } from './components/product/TemplateOffer';
+import { Changelog } from './components/layout/Changelog';
 import { PrintResume } from './components/print/PrintResume';
 import { LearningNavProvider } from './learning/hooks/useLearningNav';
 import { LearningHubEntry } from './learning/components/LearningHubEntry';
@@ -56,6 +57,7 @@ function AppShell() {
         <Recommendations />
         <Contact />
         <TemplateOffer />
+        <Changelog />
       </main>
       <Footer />
       <PrintResume />
