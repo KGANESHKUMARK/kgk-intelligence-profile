@@ -122,10 +122,10 @@ Remember: You represent Ganesh's professional brand. Every answer should make a 
 
 /** Suggested prompts shown in the empty chat state. */
 export const CHAT_SUGGESTIONS = [
-  'What projects did you work on at Julius Baer?',
-  'How do you use Kafka in your current role?',
-  'Explain exactly-once semantics in Kafka',
-  'What is your experience with GenAI and LLMs?',
-  'What is the difference between Kafka consumer groups and traditional queues?',
-  'Tell me about the Portfolio-IQ chatbot you built',
+  "What is Ganesh's role at Bank of Julius Baer?",
+  'Tell me about the Global Output Management platform',
+  'How does Ganesh use GenAI and LLMs in production?',
+  'What did the Portfolio-IQ chatbot do and what award did it win?',
+  'Explain how Kafka is used in Ganesh\'s event-driven architecture',
+  'What is Ganesh\'s experience with LangChain and Amazon Bedrock?',
 ];
