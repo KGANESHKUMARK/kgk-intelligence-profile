@@ -65,7 +65,7 @@ Edit `src/config/tailoring.ts` to re-position the entire profile against a job d
 
 ### Resume PDF
 
-Place your PDF at `public/Lead_AI_FullStack_GaneshkumarK.pdf` (or update `resumeFile` in `src/data/profile.ts`).
+Place your PDF at `public/Lead_AI_FullStack_GaneshkumarK.pdf` (current: `Lead_AI_FullStack_Developer_GaneshkumarK_16092026.pdf`) or update `resumeFile` in `src/data/profile.ts` to point to a different filename.
 
 ## Tech Stack
 

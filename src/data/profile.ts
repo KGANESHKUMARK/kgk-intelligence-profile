@@ -1,6 +1,6 @@
 /**
  * PROFILE — single source of truth for identity, contact and positioning.
- * Everything here is derived from Lead_AI_FullStack_GaneshkumarK_16082026.pdf.
+ * Everything here is derived from Lead_AI_FullStack_Developer_GaneshkumarK_16092026.pdf.
  * Edit this file to update the site; no component hard-codes these values.
  *
  * The job title, tagline and status badges come from `src/config/tailoring.ts`
