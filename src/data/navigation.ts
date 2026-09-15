@@ -17,6 +17,7 @@ export const SECTION_IDS = [
   'recommendations',
   'contact',
   'template-offer',
+  'changelog',
 ] as const;
 
 export type SectionId = (typeof SECTION_IDS)[number];
@@ -48,6 +49,7 @@ const allSections: NavSection[] = [
   { id: 'recommendations', label: 'Recommendations', index: '12' },
   { id: 'contact', label: 'Contact', index: '13', primary: true },
   { id: 'template-offer', label: 'Get the Template', index: '14' },
+  { id: 'changelog', label: 'Release History', index: '15' },
 ];
 
 const hidden = new Set<SectionId>(
