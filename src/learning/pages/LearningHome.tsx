@@ -10,7 +10,7 @@ const TECHNOLOGIES = [
   { id: 'react', name: 'React', blurb: 'Rendering model, hooks, state, performance.', available: false },
   { id: 'python', name: 'Python', blurb: 'Language model, data tooling, async.', available: false },
   { id: 'ai', name: 'AI / GenAI', blurb: 'LLMs, RAG, agents, evaluation.', available: false },
-  { id: 'kafka', name: 'Kafka', blurb: 'Topics, partitions, consumer groups, delivery semantics.', available: false },
+  { id: 'kafka', name: 'Kafka', blurb: 'Topics, partitions, consumer groups, delivery semantics, Avro, Streams.', available: true },
   { id: 'kubernetes', name: 'Kubernetes', blurb: 'Workloads, scheduling, networking, operations.', available: false },
   { id: 'system-design', name: 'System Design', blurb: 'Scalability, consistency, resilience patterns.', available: false },
 ];
@@ -28,7 +28,7 @@ export default function LearningHome() {
           the follow-up question that&apos;s coming next.
         </p>
         <p className="mt-3 font-mono text-[0.75rem] text-[var(--text-3)]">
-          {allTopics.length} topics · {allQuestions.length} interview questions · currently Java
+          {allTopics.length} topics · {allQuestions.length} interview questions · Java + Kafka
         </p>
       </header>
 

@@ -13,9 +13,10 @@ import { useLearningProgress } from '../hooks/useLearningProgress';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
 
-export default function TopicPage() {
+export default function TopicPage({ technology = 'java' }: { technology?: string }) {
   const { topicId = '' } = useParams();
   const topic = getTopic(topicId);
+  const tech = topic?.technology ?? technology;
   const { markTopicViewed, toggleBookmark, isBookmarked, toggleReviewLater, isReviewLater } = useLearningProgress();
 
   useLearningSeo(
@@ -35,8 +36,8 @@ export default function TopicPage() {
         <p className="mt-2 text-sm text-[var(--text-2)]">
           No learning content exists for &ldquo;{topicId}&rdquo; yet.
         </p>
-        <Link to="/learning/java" className="mt-4 inline-block text-sm text-[var(--accent-text)] hover:underline">
-          Back to Java Engineering Lab
+        <Link to={`/learning/${technology}`} className="mt-4 inline-block text-sm text-[var(--accent-text)] hover:underline">
+          Back to {technology === 'kafka' ? 'Kafka' : 'Java'} Engineering Lab
         </Link>
       </div>
     );
@@ -50,8 +51,8 @@ export default function TopicPage() {
     <article>
       <Breadcrumbs
         crumbs={[
-          { label: 'Java', href: '/learning/java' },
-          { label: topic.category, href: `/learning/java/category/${encodeURIComponent(topic.category)}` },
+          { label: tech === 'kafka' ? 'Kafka' : 'Java', href: `/learning/${tech}` },
+          { label: topic.category, href: `/learning/${tech}/category/${encodeURIComponent(topic.category)}` },
           { label: topic.title },
         ]}
       />
@@ -238,7 +239,7 @@ export default function TopicPage() {
               return (
                 <li key={qid}>
                   <Link
-                    to={`/learning/java/interview?q=${qid}`}
+                    to={`/learning/${tech}/interview?q=${qid}`}
                     className="group flex items-start gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2.5 transition-colors hover:border-[var(--accent-line)]"
                   >
                     <ArrowRight size={13} strokeWidth={2} className="mt-0.5 shrink-0 text-[var(--text-3)] group-hover:text-[var(--accent-text)]" aria-hidden="true" />

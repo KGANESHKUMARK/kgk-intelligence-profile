@@ -37,6 +37,25 @@ export interface ChangeEntry {
 
 export const changelog: ChangeEntry[] = [
   {
+    version: '1.5.0',
+    date: '2026-09-16',
+    title: 'Kafka Engineering Lab — Learning Hub Module 2',
+    summary:
+      'Full Kafka module added to the Learning Hub — topics, interview questions, glossary, visuals, and a dedicated home page. The registry is now multi-technology aware; Java and Kafka share the same topic, question, and visual engines.',
+    type: 'feature',
+    changes: [
+      'New Kafka module: 13 fully-built topics across Core, Producer, Consumer, Delivery Guarantees, Infrastructure, and Ecosystem.',
+      'New interview question bank: 9 questions from intermediate to architect level — covering ordering, exactly-once, rebalancing, Avro, consumer lag, and partition design.',
+      'New Kafka glossary: 12 terms with plain-English and technical definitions.',
+      'New visuals: Kafka cluster architecture, consumer group partition assignment, and producer send lifecycle.',
+      'KafkaHome page with progress tracking, category explorer, bookmarks, and production context note.',
+      'Registry updated to multi-technology aware: getTopic, getQuestion, topicRoute, glossaryByTechnology all resolve across Java and Kafka.',
+      'All existing pages (TopicPage, CategoryPage, InterviewPractice, Flashcards, GlossaryPage) now accept a technology prop — breadcrumbs, filters, and back-links adapt automatically.',
+      'Kafka routes wired: /learning/kafka, /learning/kafka/topic/:id, /learning/kafka/interview, /learning/kafka/flashcards, /learning/kafka/glossary.',
+      'LearningHome marks Kafka as available; JavaHome scope note updated.',
+    ],
+  },
+  {
     version: '1.4.0',
     date: '2026-09-15',
     title: 'Resume alignment — September 2026 QR edition',

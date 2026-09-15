@@ -5,6 +5,9 @@
  * Every component should go through this file to resolve a topic, question,
  * visual or glossary term — never hard-code a route or reach into a data
  * file directly.
+ *
+ * Technologies: Java, Kafka. New modules plug in here by adding imports
+ * and merging into the combined arrays below.
  */
 
 import { javaTopics } from '../data/java/topics';
@@ -12,15 +15,26 @@ import { javaQuestions } from '../data/java/questions';
 import { javaVisuals } from '../data/java/visuals';
 import { javaGlossary } from '../data/java/glossary';
 import { javaVersions } from '../data/java/versions';
+import { kafkaTopics } from '../data/kafka/topics';
+import { kafkaQuestions } from '../data/kafka/questions';
+import { kafkaVisuals } from '../data/kafka/visuals';
+import { kafkaGlossary } from '../data/kafka/glossary';
 import { ALIASES, normalizeTerm } from '../utils/normalize';
 import type { GlossaryTerm, InterviewQuestion, LearningTopic, LearningVisual } from '../types';
 
-/* ------------------------------------------------------------- lookups */
+/* ---------------------------------------- combined cross-technology maps */
 
-const topicsById = new Map(javaTopics.map((t) => [t.id, t]));
-const questionsById = new Map(javaQuestions.map((q) => [q.id, q]));
-const visualsById = new Map(javaVisuals.map((v) => [v.id, v]));
-const glossaryById = new Map(javaGlossary.map((g) => [g.id, g]));
+const allTopicsRaw = [...javaTopics, ...kafkaTopics];
+const allQuestionsRaw = [...javaQuestions, ...kafkaQuestions];
+const allVisualsRaw = [...javaVisuals, ...kafkaVisuals];
+const allGlossaryRaw = [...javaGlossary, ...kafkaGlossary];
+
+const topicsById = new Map(allTopicsRaw.map((t) => [t.id, t]));
+const questionsById = new Map(allQuestionsRaw.map((q) => [q.id, q]));
+const visualsById = new Map(allVisualsRaw.map((v) => [v.id, v]));
+const glossaryById = new Map(allGlossaryRaw.map((g) => [g.id, g]));
+
+/* ------------------------------------------------------------- lookups */
 
 /** Resolve any surface form ("HashMap", "Hash Map", "java.util.HashMap") to a topic. */
 export function resolveTopicId(input: string): string | undefined {
@@ -48,24 +62,60 @@ export function getVisual(id: string): LearningVisual | undefined {
 export function getGlossaryTerm(idOrTerm: string): GlossaryTerm | undefined {
   if (glossaryById.has(idOrTerm)) return glossaryById.get(idOrTerm);
   const normalized = normalizeTerm(idOrTerm);
-  return javaGlossary.find((g) => normalizeTerm(g.term) === normalized);
+  return allGlossaryRaw.find((g) => normalizeTerm(g.term) === normalized);
 }
 
-/** Stable route for a topic. The ONE place the URL pattern is defined. */
+/**
+ * Stable route for a topic — technology-aware.
+ * Reads the topic's technology field so links always point to the right module.
+ */
 export function topicRoute(id: string): string {
-  return `/learning/java/topic/${id}`;
+  const topic = topicsById.get(id);
+  const tech = topic?.technology ?? 'java';
+  return `/learning/${tech}/topic/${id}`;
 }
 
-export const allTopics = javaTopics;
-export const allQuestions = javaQuestions;
-export const allVisuals = javaVisuals;
-export const allGlossary = javaGlossary;
+/* ------------------------------------------------- public combined lists */
+
+export const allTopics = allTopicsRaw;
+export const allQuestions = allQuestionsRaw;
+export const allVisuals = allVisualsRaw;
+export const allGlossary = allGlossaryRaw;
 export const allVersions = javaVersions;
 
-export function topicsByCategory(category: string) {
-  return javaTopics.filter((t) => t.category === category);
+/* ---------------------------------------- per-technology filtered helpers */
+
+export function topicsByTechnology(technology: string) {
+  return allTopicsRaw.filter((t) => t.technology === technology);
 }
 
+export function questionsByTechnology(technology: string) {
+  return allQuestionsRaw.filter((q) => {
+    // Questions don't have a technology field directly — look up via relatedTopics or category prefix.
+    // Kafka questions all have ids starting with 'q-kafka-'.
+    if (technology === 'kafka') return q.id.startsWith('q-kafka-');
+    return !q.id.startsWith('q-kafka-');
+  });
+}
+
+export function glossaryByTechnology(technology: string) {
+  return allGlossaryRaw.filter((g) => {
+    if (technology === 'kafka') return g.id.startsWith('kafka-glossary-');
+    return !g.id.startsWith('kafka-glossary-');
+  });
+}
+
+export function topicsByCategory(category: string, technology?: string) {
+  const base = technology ? topicsByTechnology(technology) : allTopicsRaw;
+  return base.filter((t) => t.category === category);
+}
+
+export function categoryList(technology?: string) {
+  const base = technology ? topicsByTechnology(technology) : allTopicsRaw;
+  return Array.from(new Set(base.map((t) => t.category)));
+}
+
+/** @deprecated Use topicsByCategory with technology param */
 export const topicCategories = Array.from(new Set(javaTopics.map((t) => t.category)));
 
 /* ------------------------------------------------------- dev validation */
@@ -80,8 +130,6 @@ export interface ValidationIssue {
  * Development-time validator — checks every cross-reference in the
  * knowledge graph resolves to a real id. Call this once in dev (see
  * main.tsx) and read the console for "Learning Hub content error" entries.
- * Never ships as a hard build failure (no custom build tooling added), but
- * makes broken content links impossible to miss during development.
  */
 export function validateRegistry(): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
@@ -92,7 +140,7 @@ export function validateRegistry(): ValidationIssue[] {
     });
   };
 
-  for (const topic of javaTopics) {
+  for (const topic of allTopicsRaw) {
     checkTopicIds(`topic:${topic.id}`, 'prerequisites', topic.prerequisites);
     checkTopicIds(`topic:${topic.id}`, 'relatedTopics', topic.relatedTopics);
     checkTopicIds(`topic:${topic.id}`, 'nextTopics', topic.nextTopics);
@@ -104,7 +152,7 @@ export function validateRegistry(): ValidationIssue[] {
     });
   }
 
-  for (const visual of javaVisuals) {
+  for (const visual of allVisualsRaw) {
     if (!topicsById.has(visual.topicId)) {
       issues.push({ source: `visual:${visual.id}`, field: 'topicId', brokenRef: visual.topicId });
     }
@@ -122,7 +170,7 @@ export function validateRegistry(): ValidationIssue[] {
     );
   }
 
-  for (const question of javaQuestions) {
+  for (const question of allQuestionsRaw) {
     checkTopicIds(`question:${question.id}`, 'prerequisites', question.prerequisites);
     checkTopicIds(`question:${question.id}`, 'relatedTopics', question.relatedTopics);
     (question.followUps ?? []).forEach((fid) => {
@@ -130,13 +178,13 @@ export function validateRegistry(): ValidationIssue[] {
     });
   }
 
-  for (const term of javaGlossary) {
+  for (const term of allGlossaryRaw) {
     checkTopicIds(`glossary:${term.id}`, 'relatedTopics', term.relatedTopics);
   }
 
   // Every topic id must be unique and canonical (kebab-case, no duplicates).
   const seen = new Set<string>();
-  for (const topic of javaTopics) {
+  for (const topic of allTopicsRaw) {
     if (seen.has(topic.id)) issues.push({ source: `topic:${topic.id}`, field: 'id', brokenRef: 'duplicate id' });
     seen.add(topic.id);
   }
