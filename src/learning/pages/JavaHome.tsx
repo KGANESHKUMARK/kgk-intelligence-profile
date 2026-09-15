@@ -141,10 +141,10 @@ export default function JavaHome() {
 
       {/* Scope note */}
       <p className="mt-6 text-[0.6875rem] leading-relaxed text-[var(--text-3)]">
-        This is the first phase of the Learning Hub: {allTopics.length} fully-built Java topics and{' '}
-        {allQuestions.length} interview questions across Collections, Concurrency, JVM and Java 8+. The architecture
-        is technology-agnostic — Spring Boot, React, Python, Kafka and others plug into the same registry, visual and
-        question engines.
+        Java Engineering Lab: {allTopics.filter((t) => t.technology === 'java').length} fully-built topics and{' '}
+        {allQuestions.filter((q) => !q.id.startsWith('q-kafka-')).length} interview questions across Collections,
+        Concurrency, JVM and Java 8+. The architecture is technology-agnostic — Kafka is live, Spring Boot, React,
+        Python and others plug into the same registry, visual and question engines.
       </p>
     </div>
   );

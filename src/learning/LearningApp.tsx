@@ -8,6 +8,7 @@ import { LearningLayout } from './components/LearningLayout';
  */
 const LearningHome = lazy(() => import('./pages/LearningHome'));
 const JavaHome = lazy(() => import('./pages/JavaHome'));
+const KafkaHome = lazy(() => import('./pages/KafkaHome'));
 const TopicPage = lazy(() => import('./pages/TopicPage'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const InterviewPractice = lazy(() => import('./pages/InterviewPractice'));
@@ -32,16 +33,27 @@ export default function LearningApp() {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route index element={<LearningHome />} />
+
+          {/* Java module */}
           <Route path="java" element={<JavaHome />} />
-          <Route path="java/topic/:topicId" element={<TopicPage />} />
-          <Route path="java/category/:category" element={<CategoryPage />} />
-          <Route path="java/interview" element={<InterviewPractice />} />
-          <Route path="java/flashcards" element={<Flashcards />} />
+          <Route path="java/topic/:topicId" element={<TopicPage technology="java" />} />
+          <Route path="java/category/:category" element={<CategoryPage technology="java" />} />
+          <Route path="java/interview" element={<InterviewPractice technology="java" />} />
+          <Route path="java/flashcards" element={<Flashcards technology="java" />} />
           <Route path="java/quiz" element={<VisualQuiz />} />
-          <Route path="java/glossary" element={<GlossaryPage />} />
+          <Route path="java/glossary" element={<GlossaryPage technology="java" />} />
           <Route path="java/versions" element={<VersionsPage />} />
           <Route path="java/versions/:version" element={<VersionDetail />} />
           <Route path="java/latest" element={<LatestJava />} />
+
+          {/* Kafka module */}
+          <Route path="kafka" element={<KafkaHome />} />
+          <Route path="kafka/topic/:topicId" element={<TopicPage technology="kafka" />} />
+          <Route path="kafka/category/:category" element={<CategoryPage technology="kafka" />} />
+          <Route path="kafka/interview" element={<InterviewPractice technology="kafka" />} />
+          <Route path="kafka/flashcards" element={<Flashcards technology="kafka" />} />
+          <Route path="kafka/glossary" element={<GlossaryPage technology="kafka" />} />
+
           {/* Unknown learning routes fall back to the hub rather than a dead end. */}
           <Route path="*" element={<Navigate to="/learning" replace />} />
         </Routes>

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, Check, RotateCcw } from 'lucide-react';
 import { Breadcrumbs } from '../components/ContextBar';
 import { Button } from '../../components/common/Button';
-import { allTopics, topicRoute } from '../services/registry';
+import { topicsByTechnology, topicRoute } from '../services/registry';
 import { useLearningProgress } from '../hooks/useLearningProgress';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
@@ -15,10 +15,12 @@ import { EASE } from '../../lib/motion';
  * answer + key terms) rather than duplicated into a separate content set —
  * so they can never drift out of sync with the topic pages.
  */
-export default function Flashcards() {
-  useLearningSeo('Java Visual Flashcards', 'Rapid-revision flashcards derived from the Java topic library.');
+export default function Flashcards({ technology = 'java' }: { technology?: string }) {
+  const techLabel = technology === 'kafka' ? 'Kafka' : 'Java';
+  useLearningSeo(`${techLabel} Visual Flashcards`, `Rapid-revision flashcards derived from the ${techLabel} topic library.`);
 
-  const cards = useMemo(() => allTopics.filter((t) => t.interviewAnswer || t.memoryTip), []);
+  const allTopics = topicsByTechnology(technology);
+  const cards = useMemo(() => allTopics.filter((t) => t.interviewAnswer || t.memoryTip), [allTopics]);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const { flashcardStatus, setFlashcardStatus } = useLearningProgress();
@@ -37,11 +39,11 @@ export default function Flashcards() {
 
   return (
     <div>
-      <Breadcrumbs crumbs={[{ label: 'Java', href: '/learning/java' }, { label: 'Flashcards' }]} />
+      <Breadcrumbs crumbs={[{ label: techLabel, href: `/learning/${technology}` }, { label: 'Flashcards' }]} />
 
       <header className="surface-card ticked p-5 sm:p-6">
         <span className="mono-label">5-minute revision</span>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Java Visual Flashcards</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{techLabel} Visual Flashcards</h1>
         <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
           Recall first, flip second. Progress is stored locally on this device.
         </p>

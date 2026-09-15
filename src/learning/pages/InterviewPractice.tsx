@@ -4,18 +4,23 @@ import { ArrowLeft, ArrowRight, Shuffle } from 'lucide-react';
 import { Breadcrumbs } from '../components/ContextBar';
 import { QuestionCard } from '../components/QuestionCard';
 import { Button } from '../../components/common/Button';
-import { allQuestions } from '../services/registry';
+import { questionsByTechnology } from '../services/registry';
 import { questionCategories } from '../data/java/questions';
+import { kafkaQuestionCategories } from '../data/kafka/questions';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
 import type { Difficulty } from '../types';
 
 const DIFFICULTIES: (Difficulty | 'All')[] = ['All', 'beginner', 'intermediate', 'advanced', 'senior'];
 
-export default function InterviewPractice() {
+export default function InterviewPractice({ technology = 'java' }: { technology?: string }) {
+  const techLabel = technology === 'kafka' ? 'Kafka' : 'Java';
+  const allQuestions = questionsByTechnology(technology);
+  const categories = technology === 'kafka' ? kafkaQuestionCategories : questionCategories;
+
   useLearningSeo(
-    'Java Interview Practice',
-    'Practice Java interview questions with four answer depths, follow-up chains and what the interviewer is testing.',
+    `${techLabel} Interview Practice`,
+    `Practice ${techLabel} interview questions with four answer depths, follow-up chains and what the interviewer is testing.`,
   );
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +32,7 @@ export default function InterviewPractice() {
       allQuestions.filter(
         (q) => (category === 'All' || q.category === category) && (difficulty === 'All' || q.difficulty === difficulty),
       ),
-    [category, difficulty],
+    [allQuestions, category, difficulty],
   );
 
   const requestedId = searchParams.get('q');
@@ -73,11 +78,11 @@ export default function InterviewPractice() {
 
   return (
     <div>
-      <Breadcrumbs crumbs={[{ label: 'Java', href: '/learning/java' }, { label: 'Interview Practice' }]} />
+      <Breadcrumbs crumbs={[{ label: techLabel, href: `/learning/${technology}` }, { label: 'Interview Practice' }]} />
 
       <header className="surface-card ticked p-5 sm:p-6">
         <span className="mono-label">Interview</span>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Java Interview Practice</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{techLabel} Interview Practice</h1>
         <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
           Think first, then reveal. Every question has four answer depths and the follow-up chain an interviewer is
           likely to walk you down.
@@ -87,7 +92,7 @@ export default function InterviewPractice() {
         <div className="mt-5 space-y-3">
           <FilterRow
             label="Area"
-            options={['All', ...questionCategories]}
+            options={['All', ...categories]}
             value={category}
             onChange={(v) => {
               setCategory(v);

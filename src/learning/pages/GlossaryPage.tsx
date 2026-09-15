@@ -3,21 +3,23 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Breadcrumbs } from '../components/ContextBar';
 import { ReferenceList } from '../components/ReferenceList';
-import { allGlossary, getTopic, topicRoute } from '../services/registry';
+import { glossaryByTechnology, getTopic, topicRoute } from '../services/registry';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { matches } from '../../lib/utils';
 import { cn } from '../../lib/utils';
 
-export default function GlossaryPage() {
-  useLearningSeo('Java Glossary', 'Precise definitions of the Java terms interviewers expect you to use correctly.');
+export default function GlossaryPage({ technology = 'java' }: { technology?: string }) {
+  const techLabel = technology === 'kafka' ? 'Kafka' : 'Java';
+  useLearningSeo(`${techLabel} Glossary`, `Precise definitions of the ${techLabel} terms interviewers expect you to use correctly.`);
 
+  const glossary = glossaryByTechnology(technology);
   const [searchParams] = useSearchParams();
   const highlighted = searchParams.get('term');
   const [query, setQuery] = useState('');
 
   const results = useMemo(
-    () => allGlossary.filter((g) => matches(query, g.term, g.simple, g.technical, g.keyWords)),
-    [query],
+    () => glossary.filter((g) => matches(query, g.term, g.simple, g.technical, g.keyWords)),
+    [glossary, query],
   );
 
   useEffect(() => {
@@ -28,11 +30,11 @@ export default function GlossaryPage() {
 
   return (
     <div>
-      <Breadcrumbs crumbs={[{ label: 'Java', href: '/learning/java' }, { label: 'Glossary' }]} />
+      <Breadcrumbs crumbs={[{ label: techLabel, href: `/learning/${technology}` }, { label: 'Glossary' }]} />
 
       <header className="surface-card ticked p-5 sm:p-6">
         <span className="mono-label">Say it like a senior engineer</span>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Java Glossary</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{techLabel} Glossary</h1>
         <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
           Each term has a plain-English definition and the precise technical one — the wording that signals you
           actually understand the concept.
