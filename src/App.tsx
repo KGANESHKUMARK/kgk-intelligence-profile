@@ -28,6 +28,7 @@ import { PrintResume } from './components/print/PrintResume';
 import { LearningNavProvider } from './learning/hooks/useLearningNav';
 import { LearningHubEntry } from './learning/components/LearningHubEntry';
 import { Analytics } from '@vercel/analytics/react';
+import { ProfileChat } from './components/chat/ProfileChat';
 
 /** The Learning Hub is fully code-split — "/" never downloads it. */
 const LearningApp = lazy(() => import('./learning/LearningApp'));
@@ -95,6 +96,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <Analytics />
+          <ProfileChat />
         </LearningNavProvider>
       </BrowserRouter>
     </AppStateProvider>

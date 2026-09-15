@@ -37,6 +37,28 @@ export interface ChangeEntry {
 
 export const changelog: ChangeEntry[] = [
   {
+    version: '1.6.0',
+    date: '2026-09-16',
+    title: 'Profile-Aware AI Chat — Groq Integration',
+    summary:
+      'Floating chat widget powered by Groq (Llama 3.1 8B Instant) — always-warm, real-time SSE streaming, free tier. Visitors can ask questions about Ganesh\'s experience, skills, projects, and Learning Hub topics (Java & Kafka), all grounded to profile data only with guardrails against off-topic answers.',
+    type: 'feature',
+    changes: [
+      'Floating "Ask AI" pill button (bottom-right) — matches LearningHub entry style exactly.',
+      'Powered by llama-3.1-8b-instant via Groq (free tier: 14,400 req/day, always-warm, no cold starts).',
+      'Profile context builder: derives compact context from profile.ts, experience.ts, projects.ts, certifications.ts, and all Learning Hub topics.',
+      'System prompt with guardrails: model refuses off-topic questions, never invents information, and stays grounded to profile data.',
+      'Real SSE streaming responses — tokens appear live as the model generates them.',
+      'Rate-limit handling: 429 responses show a friendly "try again" message.',
+      'Conversation persisted to localStorage — survives page refresh.',
+      'Suggested prompts in empty state: experience, projects, Kafka concepts, GenAI background.',
+      'Graceful degradation: if VITE_GROQ_TOKEN is not set the widget is hidden entirely.',
+      'Configurable model via VITE_GROQ_MODEL env var. Token via VITE_GROQ_TOKEN. See .env.example.',
+      'Inline markdown rendering in assistant responses (bold, code, bullet points).',
+      'Accessibility: ARIA labels, keyboard navigation (Enter to send, Shift+Enter for newline), focus management.',
+    ],
+  },
+  {
     version: '1.5.0',
     date: '2026-09-16',
     title: 'Kafka Engineering Lab — Learning Hub Module 2',

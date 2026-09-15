@@ -22,7 +22,11 @@ type EventName =
   | 'jd_analysed'
   | 'template_buy_clicked'
   | 'resume_printed'
-  | 'profile_shared';
+  | 'profile_shared'
+  | 'chat_opened'
+  | 'chat_message_sent'
+  | 'chat_suggestion_clicked'
+  | 'chat_cleared';
 
 /**
  * Fire a custom analytics event. Safe to call anywhere — errors are
