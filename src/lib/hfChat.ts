@@ -28,15 +28,10 @@ const GROQ_TOKEN = (import.meta.env.VITE_GROQ_TOKEN as string | undefined)?.trim
 const GROQ_MODEL =
   (import.meta.env.VITE_GROQ_MODEL as string | undefined)?.trim() ?? 'qwen/qwen3.8-27b';
 
-// NVIDIA NIM token + model — loaded for future server-side use (Vercel Edge Function).
-// NOT used in the browser: NVIDIA's API doesn't support CORS, so fetch is blocked.
-// Kept here so a future Edge Function can read the same env var without code changes.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const NVIDIA_TOKEN = (import.meta.env.VITE_NVIDIA_TOKEN as string | undefined)?.trim();
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const NVIDIA_MODEL =
-  (import.meta.env.VITE_NVIDIA_MODEL as string | undefined)?.trim() ??
-  'nvidia/nemotron-3.5-lightning-30b-a3b';
+// NVIDIA NIM: VITE_NVIDIA_TOKEN + VITE_NVIDIA_MODEL are NOT loaded in the browser.
+// NVIDIA's API doesn't support CORS, so browser fetch is blocked. These env vars
+// are intended for a future Vercel Edge Function (server-side, no CORS restriction).
+// When that's built, read import.meta.env.VITE_NVIDIA_TOKEN there.
 
 const HF_TOKEN = (import.meta.env.VITE_HF_TOKEN as string | undefined)?.trim();
 const HF_MODEL =
