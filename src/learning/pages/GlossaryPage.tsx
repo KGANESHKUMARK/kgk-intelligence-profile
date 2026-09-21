@@ -7,10 +7,11 @@ import { glossaryByTechnology, getTopic, topicRoute } from '../services/registry
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { matches } from '../../lib/utils';
 import { cn } from '../../lib/utils';
+import { techLabel } from '../utils/tech';
 
 export default function GlossaryPage({ technology = 'java' }: { technology?: string }) {
-  const techLabel = technology === 'kafka' ? 'Kafka' : 'Java';
-  useLearningSeo(`${techLabel} Glossary`, `Precise definitions of the ${techLabel} terms interviewers expect you to use correctly.`);
+  const label = techLabel(technology);
+  useLearningSeo(`${label} Glossary`, `Precise definitions of the ${label} terms interviewers expect you to use correctly.`);
 
   const glossary = glossaryByTechnology(technology);
   const [searchParams] = useSearchParams();
@@ -30,11 +31,11 @@ export default function GlossaryPage({ technology = 'java' }: { technology?: str
 
   return (
     <div>
-      <Breadcrumbs crumbs={[{ label: techLabel, href: `/learning/${technology}` }, { label: 'Glossary' }]} />
+      <Breadcrumbs crumbs={[{ label, href: `/learning/${technology}` }, { label: 'Glossary' }]} />
 
       <header className="surface-card ticked p-5 sm:p-6">
         <span className="mono-label">Say it like a senior engineer</span>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{techLabel} Glossary</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{label} Glossary</h1>
         <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
           Each term has a plain-English definition and the precise technical one — the wording that signals you
           actually understand the concept.

@@ -7,20 +7,23 @@ import { Button } from '../../components/common/Button';
 import { questionsByTechnology } from '../services/registry';
 import { questionCategories } from '../data/java/questions';
 import { kafkaQuestionCategories } from '../data/kafka/questions';
+import { reactQuestionCategories } from '../data/react/questions';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
+import { techLabel } from '../utils/tech';
 import type { Difficulty } from '../types';
 
 const DIFFICULTIES: (Difficulty | 'All')[] = ['All', 'beginner', 'intermediate', 'advanced', 'senior'];
 
 export default function InterviewPractice({ technology = 'java' }: { technology?: string }) {
-  const techLabel = technology === 'kafka' ? 'Kafka' : 'Java';
+  const techLabelValue = techLabel(technology);
   const allQuestions = questionsByTechnology(technology);
-  const categories = technology === 'kafka' ? kafkaQuestionCategories : questionCategories;
+  const categories =
+    technology === 'kafka' ? kafkaQuestionCategories : technology === 'react' ? reactQuestionCategories : questionCategories;
 
   useLearningSeo(
-    `${techLabel} Interview Practice`,
-    `Practice ${techLabel} interview questions with four answer depths, follow-up chains and what the interviewer is testing.`,
+    `${techLabel(technology)} Interview Practice`,
+    `Practice ${techLabel(technology)} interview questions with four answer depths, follow-up chains and what the interviewer is testing.`,
   );
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -78,11 +81,11 @@ export default function InterviewPractice({ technology = 'java' }: { technology?
 
   return (
     <div>
-      <Breadcrumbs crumbs={[{ label: techLabel, href: `/learning/${technology}` }, { label: 'Interview Practice' }]} />
+      <Breadcrumbs crumbs={[{ label: techLabelValue, href: `/learning/${technology}` }, { label: 'Interview Practice' }]} />
 
       <header className="surface-card ticked p-5 sm:p-6">
         <span className="mono-label">Interview</span>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{techLabel} Interview Practice</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{techLabelValue} Interview Practice</h1>
         <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
           Think first, then reveal. Every question has four answer depths and the follow-up chain an interviewer is
           likely to walk you down.

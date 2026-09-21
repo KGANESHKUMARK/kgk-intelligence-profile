@@ -3,20 +3,49 @@ import { Command, GraduationCap, Moon, Sun, UserRound } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { useAppState } from '../../hooks/useAppState';
 import { cn } from '../../lib/utils';
+import { techLabel } from '../utils/tech';
 
-const NAV = [
-  { label: 'Java Home', to: '/learning/java' },
-  { label: "What's New", to: '/learning/java/latest' },
-  { label: 'Versions', to: '/learning/java/versions' },
-  { label: 'Interview', to: '/learning/java/interview' },
-  { label: 'Flashcards', to: '/learning/java/flashcards' },
-  { label: 'Quiz', to: '/learning/java/quiz' },
-  { label: 'Glossary', to: '/learning/java/glossary' },
+/**
+ * Per-track navigation. The active track is derived from the URL so each
+ * module (Java, Kafka, React) shows its own sections in the header.
+ */
+const TRACK_NAV: Record<string, { label: string; to: string }[]> = {
+  java: [
+    { label: 'Java Home', to: '/learning/java' },
+    { label: "What's New", to: '/learning/java/latest' },
+    { label: 'Versions', to: '/learning/java/versions' },
+    { label: 'Interview', to: '/learning/java/interview' },
+    { label: 'Flashcards', to: '/learning/java/flashcards' },
+    { label: 'Quiz', to: '/learning/java/quiz' },
+    { label: 'Glossary', to: '/learning/java/glossary' },
+  ],
+  kafka: [
+    { label: 'Kafka Home', to: '/learning/kafka' },
+    { label: 'Interview', to: '/learning/kafka/interview' },
+    { label: 'Flashcards', to: '/learning/kafka/flashcards' },
+    { label: 'Glossary', to: '/learning/kafka/glossary' },
+  ],
+  react: [
+    { label: 'React Home', to: '/learning/react' },
+    { label: 'Interview', to: '/learning/react/interview' },
+    { label: 'Flashcards', to: '/learning/react/flashcards' },
+    { label: 'Glossary', to: '/learning/react/glossary' },
+  ],
+};
+
+const TRACKS = [
+  { id: 'java', label: 'Java' },
+  { id: 'kafka', label: 'Kafka' },
+  { id: 'react', label: 'React' },
 ];
 
 export function LearningLayout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme, setPaletteOpen } = useAppState();
   const location = useLocation();
+
+  const trackMatch = /^\/learning\/(java|kafka|react)(\/|$)/.exec(location.pathname);
+  const track = trackMatch?.[1] ?? 'java';
+  const nav = TRACK_NAV[track] ?? TRACK_NAV.java;
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -24,18 +53,37 @@ export function LearningLayout({ children }: { children: React.ReactNode }) {
 
       <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[color-mix(in_oklab,var(--bg)_85%,transparent)] backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-4 sm:px-6 lg:px-8">
-          <Link to="/learning/java" className="flex shrink-0 items-center gap-2.5">
+          <Link to="/learning" className="flex shrink-0 items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--ai-line)] bg-[var(--ai-soft)] text-[var(--ai-text)]">
               <GraduationCap size={16} strokeWidth={1.75} aria-hidden="true" />
             </span>
             <span className="hidden leading-tight sm:block">
-              <span className="block text-[0.8125rem] font-semibold tracking-tight">Java Engineering Lab</span>
+              <span className="block text-[0.8125rem] font-semibold tracking-tight">{techLabel(track)} Engineering Lab</span>
               <span className="mono-label text-[0.625rem]">Learning Hub</span>
             </span>
           </Link>
 
+          {/* Track switcher */}
+          <nav aria-label="Learning modules" className="hidden items-center gap-0.5 lg:flex">
+            {TRACKS.map((t) => (
+              <Link
+                key={t.id}
+                to={`/learning/${t.id}`}
+                aria-current={track === t.id ? 'true' : undefined}
+                className={cn(
+                  'rounded-lg px-2.5 py-2 text-[0.8125rem] font-semibold whitespace-nowrap transition-colors',
+                  track === t.id
+                    ? 'bg-[var(--accent-soft)] text-[var(--accent-text)]'
+                    : 'text-[var(--text-3)] hover:text-[var(--text-2)]',
+                )}
+              >
+                {techLabel(t.id)}
+              </Link>
+            ))}
+          </nav>
+
           <nav aria-label="Learning sections" className="hide-scrollbar mx-auto hidden items-center gap-0.5 overflow-x-auto lg:flex">
-            {NAV.map((item) => {
+            {nav.map((item) => {
               const active = location.pathname === item.to;
               return (
                 <Link
@@ -75,7 +123,20 @@ export function LearningLayout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile nav */}
         <div className="hide-scrollbar flex items-center gap-1 overflow-x-auto border-t border-[var(--line)] px-4 py-2 lg:hidden">
-          {NAV.map((item) => (
+          {TRACKS.map((t) => (
+            <Link
+              key={t.id}
+              to={`/learning/${t.id}`}
+              className={cn(
+                'shrink-0 rounded-md px-2.5 py-1.5 text-[0.75rem] font-semibold whitespace-nowrap transition-colors',
+                track === t.id ? 'bg-[var(--accent-soft)] text-[var(--accent-text)]' : 'text-[var(--text-3)]',
+              )}
+            >
+              {techLabel(t.id)}
+            </Link>
+          ))}
+          <span className="mx-1 h-4 w-px shrink-0 bg-[var(--line)]" aria-hidden="true" />
+          {nav.map((item) => (
             <Link
               key={item.to}
               to={item.to}
@@ -98,7 +159,7 @@ export function LearningLayout({ children }: { children: React.ReactNode }) {
 
       <footer className="relative border-t border-[var(--line)] bg-[var(--bg-elev)] py-6">
         <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-3 px-4 text-[0.6875rem] text-[var(--text-3)] sm:px-6 lg:px-8">
-          <span>Java Engineering Lab — a learning module of the Engineering Intelligence Profile.</span>
+          <span>Engineering Learning Hub — a learning module of the Engineering Intelligence Profile.</span>
           <Link to="/" className="ml-auto hover:text-[var(--accent-text)]">
             Back to resume portal
           </Link>

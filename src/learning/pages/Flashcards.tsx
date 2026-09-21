@@ -9,6 +9,7 @@ import { useLearningProgress } from '../hooks/useLearningProgress';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
 import { EASE } from '../../lib/motion';
+import { techLabel } from '../utils/tech';
 
 /**
  * Flashcards are derived from existing topic data (memory tip + interview
@@ -16,8 +17,8 @@ import { EASE } from '../../lib/motion';
  * so they can never drift out of sync with the topic pages.
  */
 export default function Flashcards({ technology = 'java' }: { technology?: string }) {
-  const techLabel = technology === 'kafka' ? 'Kafka' : 'Java';
-  useLearningSeo(`${techLabel} Visual Flashcards`, `Rapid-revision flashcards derived from the ${techLabel} topic library.`);
+  const label = techLabel(technology);
+  useLearningSeo(`${label} Visual Flashcards`, `Rapid-revision flashcards derived from the ${label} topic library.`);
 
   const allTopics = topicsByTechnology(technology);
   const cards = useMemo(() => allTopics.filter((t) => t.interviewAnswer || t.memoryTip), [allTopics]);
@@ -39,11 +40,11 @@ export default function Flashcards({ technology = 'java' }: { technology?: strin
 
   return (
     <div>
-      <Breadcrumbs crumbs={[{ label: techLabel, href: `/learning/${technology}` }, { label: 'Flashcards' }]} />
+      <Breadcrumbs crumbs={[{ label, href: `/learning/${technology}` }, { label: 'Flashcards' }]} />
 
       <header className="surface-card ticked p-5 sm:p-6">
         <span className="mono-label">5-minute revision</span>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{techLabel} Visual Flashcards</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{label} Visual Flashcards</h1>
         <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
           Recall first, flip second. Progress is stored locally on this device.
         </p>

@@ -3,11 +3,11 @@ import { ArrowRight, Lock } from 'lucide-react';
 import { allQuestions, allTopics } from '../services/registry';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 
-/** Future technology modules. Only Java is built — the rest are honestly marked. */
+/** Future technology modules. Java, Kafka and React are built — the rest are honestly marked. */
 const TECHNOLOGIES = [
   { id: 'java', name: 'Java', blurb: 'Core language, collections, concurrency, JVM and modern Java.', available: true },
   { id: 'spring-boot', name: 'Spring Boot', blurb: 'Dependency injection, web layer, data access, production config.', available: false },
-  { id: 'react', name: 'React', blurb: 'Rendering model, hooks, state, performance.', available: false },
+  { id: 'react', name: 'React', blurb: 'Rendering model, hooks, performance, server state, TypeScript, architecture.', available: true },
   { id: 'python', name: 'Python', blurb: 'Language model, data tooling, async.', available: false },
   { id: 'ai', name: 'AI / GenAI', blurb: 'LLMs, RAG, agents, evaluation.', available: false },
   { id: 'kafka', name: 'Kafka', blurb: 'Topics, partitions, consumer groups, delivery semantics, Avro, Streams.', available: true },
@@ -28,7 +28,7 @@ export default function LearningHome() {
           the follow-up question that&apos;s coming next.
         </p>
         <p className="mt-3 font-mono text-[0.75rem] text-[var(--text-3)]">
-          {allTopics.length} topics · {allQuestions.length} interview questions · Java + Kafka
+          {allTopics.length} topics · {allQuestions.length} interview questions · Java + Kafka + React
         </p>
       </header>
 

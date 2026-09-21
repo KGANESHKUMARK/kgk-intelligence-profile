@@ -12,6 +12,7 @@ import { getTopic, getVisual, getQuestion, topicRoute } from '../services/regist
 import { useLearningProgress } from '../hooks/useLearningProgress';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
+import { techLabel } from '../utils/tech';
 
 export default function TopicPage({ technology = 'java' }: { technology?: string }) {
   const { topicId = '' } = useParams();
@@ -37,7 +38,7 @@ export default function TopicPage({ technology = 'java' }: { technology?: string
           No learning content exists for &ldquo;{topicId}&rdquo; yet.
         </p>
         <Link to={`/learning/${technology}`} className="mt-4 inline-block text-sm text-[var(--accent-text)] hover:underline">
-          Back to {technology === 'kafka' ? 'Kafka' : 'Java'} Engineering Lab
+          Back to {techLabel(technology)} Engineering Lab
         </Link>
       </div>
     );
@@ -51,7 +52,7 @@ export default function TopicPage({ technology = 'java' }: { technology?: string
     <article>
       <Breadcrumbs
         crumbs={[
-          { label: tech === 'kafka' ? 'Kafka' : 'Java', href: `/learning/${tech}` },
+          { label: techLabel(tech), href: `/learning/${tech}` },
           { label: topic.category, href: `/learning/${tech}/category/${encodeURIComponent(topic.category)}` },
           { label: topic.title },
         ]}

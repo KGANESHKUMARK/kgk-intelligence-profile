@@ -4,18 +4,19 @@ import { Breadcrumbs } from '../components/ContextBar';
 import { StatusBadge } from '../components/StatusBadge';
 import { topicRoute, topicsByCategory } from '../services/registry';
 import { useLearningSeo } from '../hooks/useLearningSeo';
+import { techLabel } from '../utils/tech';
 
 export default function CategoryPage({ technology = 'java' }: { technology?: string }) {
   const { category = '' } = useParams();
   const decoded = decodeURIComponent(category);
   const topics = topicsByCategory(decoded, technology);
-  const techLabel = technology === 'kafka' ? 'Kafka' : 'Java';
+  const label = techLabel(technology);
 
-  useLearningSeo(decoded, `${techLabel} ${decoded} topics — visual explanations, internals and interview answers.`);
+  useLearningSeo(decoded, `${label} ${decoded} topics — visual explanations, internals and interview answers.`);
 
   return (
     <div>
-      <Breadcrumbs crumbs={[{ label: techLabel, href: `/learning/${technology}` }, { label: decoded }]} />
+      <Breadcrumbs crumbs={[{ label, href: `/learning/${technology}` }, { label: decoded }]} />
 
       <header className="surface-card ticked p-5 sm:p-6">
         <span className="mono-label">Category</span>
@@ -29,7 +30,7 @@ export default function CategoryPage({ technology = 'java' }: { technology?: str
         <div className="surface-card mt-4 p-6 text-center">
           <p className="text-sm text-[var(--text-2)]">No topics exist in this category yet.</p>
           <Link to={`/learning/${technology}`} className="mt-3 inline-block text-sm text-[var(--accent-text)] hover:underline">
-            Back to {techLabel} Engineering Lab
+            Back to {label} Engineering Lab
           </Link>
         </div>
       ) : (

@@ -6,7 +6,7 @@
  * visual or glossary term — never hard-code a route or reach into a data
  * file directly.
  *
- * Technologies: Java, Kafka. New modules plug in here by adding imports
+ * Technologies: Java, Kafka, React. New modules plug in here by adding imports
  * and merging into the combined arrays below.
  */
 
@@ -19,15 +19,19 @@ import { kafkaTopics } from '../data/kafka/topics';
 import { kafkaQuestions } from '../data/kafka/questions';
 import { kafkaVisuals } from '../data/kafka/visuals';
 import { kafkaGlossary } from '../data/kafka/glossary';
+import { reactTopics } from '../data/react/topics';
+import { reactQuestions } from '../data/react/questions';
+import { reactVisuals } from '../data/react/visuals';
+import { reactGlossary } from '../data/react/glossary';
 import { ALIASES, normalizeTerm } from '../utils/normalize';
 import type { GlossaryTerm, InterviewQuestion, LearningTopic, LearningVisual } from '../types';
 
 /* ---------------------------------------- combined cross-technology maps */
 
-const allTopicsRaw = [...javaTopics, ...kafkaTopics];
-const allQuestionsRaw = [...javaQuestions, ...kafkaQuestions];
-const allVisualsRaw = [...javaVisuals, ...kafkaVisuals];
-const allGlossaryRaw = [...javaGlossary, ...kafkaGlossary];
+const allTopicsRaw = [...javaTopics, ...kafkaTopics, ...reactTopics];
+const allQuestionsRaw = [...javaQuestions, ...kafkaQuestions, ...reactQuestions];
+const allVisualsRaw = [...javaVisuals, ...kafkaVisuals, ...reactVisuals];
+const allGlossaryRaw = [...javaGlossary, ...kafkaGlossary, ...reactGlossary];
 
 const topicsById = new Map(allTopicsRaw.map((t) => [t.id, t]));
 const questionsById = new Map(allQuestionsRaw.map((q) => [q.id, q]));
@@ -91,17 +95,18 @@ export function topicsByTechnology(technology: string) {
 
 export function questionsByTechnology(technology: string) {
   return allQuestionsRaw.filter((q) => {
-    // Questions don't have a technology field directly — look up via relatedTopics or category prefix.
-    // Kafka questions all have ids starting with 'q-kafka-'.
+    // Questions don't have a technology field directly — ids are prefixed per module.
     if (technology === 'kafka') return q.id.startsWith('q-kafka-');
-    return !q.id.startsWith('q-kafka-');
+    if (technology === 'react') return q.id.startsWith('q-react-');
+    return !q.id.startsWith('q-kafka-') && !q.id.startsWith('q-react-');
   });
 }
 
 export function glossaryByTechnology(technology: string) {
   return allGlossaryRaw.filter((g) => {
     if (technology === 'kafka') return g.id.startsWith('kafka-glossary-');
-    return !g.id.startsWith('kafka-glossary-');
+    if (technology === 'react') return g.id.startsWith('react-glossary-');
+    return !g.id.startsWith('kafka-glossary-') && !g.id.startsWith('react-glossary-');
   });
 }
 

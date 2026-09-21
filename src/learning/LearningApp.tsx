@@ -9,6 +9,7 @@ import { LearningLayout } from './components/LearningLayout';
 const LearningHome = lazy(() => import('./pages/LearningHome'));
 const JavaHome = lazy(() => import('./pages/JavaHome'));
 const KafkaHome = lazy(() => import('./pages/KafkaHome'));
+const ReactHome = lazy(() => import('./pages/ReactHome'));
 const TopicPage = lazy(() => import('./pages/TopicPage'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const InterviewPractice = lazy(() => import('./pages/InterviewPractice'));
@@ -53,6 +54,14 @@ export default function LearningApp() {
           <Route path="kafka/interview" element={<InterviewPractice technology="kafka" />} />
           <Route path="kafka/flashcards" element={<Flashcards technology="kafka" />} />
           <Route path="kafka/glossary" element={<GlossaryPage technology="kafka" />} />
+
+          {/* React module */}
+          <Route path="react" element={<ReactHome />} />
+          <Route path="react/topic/:topicId" element={<TopicPage technology="react" />} />
+          <Route path="react/category/:category" element={<CategoryPage technology="react" />} />
+          <Route path="react/interview" element={<InterviewPractice technology="react" />} />
+          <Route path="react/flashcards" element={<Flashcards technology="react" />} />
+          <Route path="react/glossary" element={<GlossaryPage technology="react" />} />
 
           {/* Unknown learning routes fall back to the hub rather than a dead end. */}
           <Route path="*" element={<Navigate to="/learning" replace />} />

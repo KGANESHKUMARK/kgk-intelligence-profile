@@ -22,6 +22,18 @@ export interface SearchResult {
   keywords: string[];
 }
 
+function questionRoute(id: string): string {
+  if (id.startsWith('q-kafka-')) return `/learning/kafka/interview?q=${id}`;
+  if (id.startsWith('q-react-')) return `/learning/react/interview?q=${id}`;
+  return `/learning/java/interview?q=${id}`;
+}
+
+function glossaryRoute(id: string): string {
+  if (id.startsWith('kafka-glossary-')) return `/learning/kafka/glossary?term=${id}`;
+  if (id.startsWith('react-glossary-')) return `/learning/react/glossary?term=${id}`;
+  return `/learning/java/glossary?term=${id}`;
+}
+
 function buildIndex(): SearchResult[] {
   const topicResults: SearchResult[] = allTopics.map((t) => ({
     id: t.id,
@@ -37,7 +49,7 @@ function buildIndex(): SearchResult[] {
     type: 'question',
     title: q.question,
     subtitle: q.category,
-    route: `/learning/java/interview?q=${q.id}`,
+    route: questionRoute(q.id),
     keywords: [q.question, q.category, ...q.keyTerms, ...q.conceptsTested],
   }));
 
@@ -46,7 +58,7 @@ function buildIndex(): SearchResult[] {
     type: 'glossary',
     title: g.term,
     subtitle: 'Glossary',
-    route: `/learning/java/glossary?term=${g.id}`,
+    route: glossaryRoute(g.id),
     keywords: [g.term, ...g.keyWords],
   }));
 
