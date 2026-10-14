@@ -12,6 +12,7 @@ import {
   Boxes,
   Brain,
   Cloud,
+  Container,
   Database,
   FileCode2,
   Gauge,
@@ -28,6 +29,7 @@ import {
   Server,
   ShieldCheck,
   Sparkles,
+  Terminal,
   Workflow,
   Zap,
 } from 'lucide-react';
@@ -132,6 +134,56 @@ export const MODULE_HOMES: Record<string, ModuleHomeConfig> = {
     ],
     productionNote:
       'Focused on enterprise Angular: large forms, OnPush everywhere, HTTP interceptors for auth and errors, and keeping RxJS streams leak-free.',
+  },
+  'docker-k8s': {
+    id: 'docker-k8s',
+    title: 'Docker & Kubernetes Lab',
+    tagline:
+      'Containers, orchestration, networking and GitOps — the production K8s skills that cloud-native engineering interviews probe at every level.',
+    seoDescription:
+      'Docker and Kubernetes interview preparation — containers, K8s architecture, workloads, HPA, health probes, networking, Helm, and GitOps with ArgoCD.',
+    categoryCards: [
+      { category: 'Containers', blurb: 'Images, layers, multi-stage builds, security hardening, resource limits.', icon: Container },
+      { category: 'Kubernetes Core', blurb: 'Control plane, etcd, scheduler, kubelet, reconciliation, kubectl flow.', icon: Server },
+      { category: 'Workloads & Scaling', blurb: 'Deployments, StatefulSets, HPA, probes, PodDisruptionBudget.', icon: Activity },
+      { category: 'Networking', blurb: 'Services, Ingress, CoreDNS, NetworkPolicy, CNI, eBPF with Cilium.', icon: Network },
+      { category: 'Helm & GitOps', blurb: 'Helm charts, ArgoCD, self-heal, drift detection, Sealed Secrets.', icon: GitBranch },
+    ],
+    productionNote:
+      'Covers every Docker/K8s topic that appears in senior platform engineering interviews: JVM-in-container pitfalls (MaxRAMPercentage), StatefulSet vs Deployment, security context hardening, and GitOps for SOX-compliant banking environments.',
+  },
+  aws: {
+    id: 'aws',
+    title: 'AWS Cloud Engineering Lab',
+    tagline:
+      'From EC2 and Lambda to event-driven architecture and cost optimisation — the AWS patterns every Lead Engineer is expected to own in production.',
+    seoDescription:
+      'AWS cloud interview preparation — EC2, ECS, EKS, Lambda, RDS, DynamoDB, S3, VPC, IAM, SQS, SNS, EventBridge, Kinesis, and the Well-Architected Framework.',
+    categoryCards: [
+      { category: 'Compute', blurb: 'EC2, Auto Scaling, ECS/EKS, Lambda cold starts, Fargate, SnapStart.', icon: Terminal },
+      { category: 'Storage & Databases', blurb: 'S3 presigned URLs, RDS Aurora, DynamoDB partition keys, ElastiCache.', icon: Database },
+      { category: 'Networking & Security', blurb: 'VPC three-tier architecture, IAM least privilege, IRSA, PrivateLink.', icon: Lock },
+      { category: 'Event-Driven', blurb: 'SQS DLQ, SNS fan-out, EventBridge rules, Kinesis streams.', icon: Workflow },
+      { category: 'Architecture Patterns', blurb: 'Well-Architected 6 pillars, cost optimisation, RTO/RPO, IaC.', icon: Layers },
+    ],
+    productionNote:
+      'Grounded in real banking cloud patterns: private subnets for all compute, IAM task roles per service, SQS idempotency for payment deduplication, and AWS Savings Plans reducing cloud spend by 40%.',
+  },
+  observability: {
+    id: 'observability',
+    title: 'Observability Engineering Lab',
+    tagline:
+      'Distributed tracing, metrics, structured logging and incident response — the three-pillar observability stack that separates senior engineers from staff-level.',
+    seoDescription:
+      'Observability interview preparation — OpenTelemetry, Jaeger, Prometheus, Grafana, SLOs, error budgets, ELK stack, MTTD/MTTR, chaos engineering, and post-mortems.',
+    categoryCards: [
+      { category: 'Distributed Tracing', blurb: 'OpenTelemetry, trace context propagation, Jaeger, sampling strategies.', icon: Search },
+      { category: 'Metrics & Alerting', blurb: 'Prometheus, PromQL, SLO/SLI/error budget, multi-window burn rate.', icon: Gauge },
+      { category: 'Logging', blurb: 'Structured JSON logging, MDC, Fluent Bit, ELK/EFK, log-trace correlation.', icon: FileCode2 },
+      { category: 'Incident Response', blurb: 'MTTD/MTTR, runbooks, blameless post-mortems, chaos engineering.', icon: Radar },
+    ],
+    productionNote:
+      'Based on building and operating 12 microservices in production: SLO burn rate alerting that replaced 200 threshold alerts, exemplars linking Grafana spikes to Jaeger traces, and MDC injection that reduced incident MTTR from 45 to 8 minutes.',
   },
 };
 

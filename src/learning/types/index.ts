@@ -222,7 +222,7 @@ export interface InterviewQuestion {
 /* ---------------------------------------------------------- glossary */
 
 export interface GlossaryTerm {
-  id: string;
+  id?: string;
   /** Owning module. Legacy Java/Kafka/React terms omit this and are resolved by id prefix. */
   technology?: string;
   term: string;
@@ -233,6 +233,10 @@ export interface GlossaryTerm {
   keyWords?: string[];
   /** Authoring convenience alias — used when simple/technical split is not practical. */
   definition?: string;
+  /** Optional grouping category within a module (e.g. "Containers", "Networking"). */
+  category?: string;
+  /** Concrete usage example shown alongside the definition. */
+  example?: string;
   relatedTopics?: TopicId[];
   reference?: LearningReference;
 }

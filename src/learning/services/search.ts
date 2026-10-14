@@ -59,7 +59,7 @@ function buildIndex(): SearchResult[] {
   }));
 
   const glossaryResults: SearchResult[] = allGlossary.map((g) => ({
-    id: g.id,
+    id: g.id ?? g.term,
     type: 'glossary',
     title: g.term,
     subtitle: 'Glossary',

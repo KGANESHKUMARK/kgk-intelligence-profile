@@ -7,8 +7,8 @@
  * file directly.
  *
  * Technologies: Java, Kafka, React, Spring Boot, System Design, GenAI,
- * MLOps & AIOps, Angular. New modules plug in here by adding imports
- * and merging into the combined arrays below.
+ * MLOps & AIOps, Angular, Docker & K8s, AWS, Observability.
+ * New modules plug in here by adding imports and merging into the combined arrays below.
  */
 
 import { javaTopics } from '../data/java/topics';
@@ -44,6 +44,18 @@ import { angularTopics } from '../data/angular/topics';
 import { angularQuestions } from '../data/angular/questions';
 import { angularVisuals } from '../data/angular/visuals';
 import { angularGlossary } from '../data/angular/glossary';
+import { dockerK8sTopics } from '../data/docker-k8s/topics';
+import { dockerK8sQuestions } from '../data/docker-k8s/questions';
+import { dockerK8sVisuals } from '../data/docker-k8s/visuals';
+import { dockerK8sGlossary } from '../data/docker-k8s/glossary';
+import { awsTopics } from '../data/aws/topics';
+import { awsQuestions } from '../data/aws/questions';
+import { awsVisuals } from '../data/aws/visuals';
+import { awsGlossary } from '../data/aws/glossary';
+import { observabilityTopics } from '../data/observability/topics';
+import { observabilityQuestions } from '../data/observability/questions';
+import { observabilityVisuals } from '../data/observability/visuals';
+import { observabilityGlossary } from '../data/observability/glossary';
 import { ALIASES, normalizeTerm } from '../utils/normalize';
 import type { GlossaryTerm, InterviewQuestion, LearningTopic, LearningVisual } from '../types';
 
@@ -58,6 +70,9 @@ const allTopicsRaw = [
   ...genaiTopics,
   ...mlopsTopics,
   ...angularTopics,
+  ...dockerK8sTopics,
+  ...awsTopics,
+  ...observabilityTopics,
 ];
 const allQuestionsRaw = [
   ...javaQuestions,
@@ -68,6 +83,9 @@ const allQuestionsRaw = [
   ...genaiQuestions,
   ...mlopsQuestions,
   ...angularQuestions,
+  ...dockerK8sQuestions,
+  ...awsQuestions,
+  ...observabilityQuestions,
 ];
 const allVisualsRaw = [
   ...javaVisuals,
@@ -78,6 +96,9 @@ const allVisualsRaw = [
   ...genaiVisuals,
   ...mlopsVisuals,
   ...angularVisuals,
+  ...dockerK8sVisuals,
+  ...awsVisuals,
+  ...observabilityVisuals,
 ];
 const allGlossaryRaw = [
   ...javaGlossary,
@@ -88,6 +109,9 @@ const allGlossaryRaw = [
   ...genaiGlossary,
   ...mlopsGlossary,
   ...angularGlossary,
+  ...dockerK8sGlossary,
+  ...awsGlossary,
+  ...observabilityGlossary,
 ];
 
 const topicsById = new Map(allTopicsRaw.map((t) => [t.id, t]));
@@ -163,8 +187,8 @@ export function questionTechnology(q: InterviewQuestion): string {
 
 export function glossaryTechnology(g: GlossaryTerm): string {
   if (g.technology) return g.technology;
-  if (g.id.startsWith('kafka-glossary-')) return 'kafka';
-  if (g.id.startsWith('react-glossary-')) return 'react';
+  if (g.id?.startsWith('kafka-glossary-')) return 'kafka';
+  if (g.id?.startsWith('react-glossary-')) return 'react';
   return 'java';
 }
 
