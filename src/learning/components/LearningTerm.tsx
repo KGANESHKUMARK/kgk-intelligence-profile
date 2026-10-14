@@ -29,7 +29,7 @@ export function LearningTerm({ term, children }: { term: string; children?: Reac
   const route = topic ? topicRoute(topic.id) : `/learning/java/glossary?term=${glossary!.id}`;
   const tooltipTitle = topic ? topic.title : glossary!.term;
   const tooltipCategory = topic ? topic.category : 'Glossary';
-  const tooltipDescription = topic ? topic.oneLineMeaning : glossary!.simple;
+  const tooltipDescription = topic ? topic.oneLineMeaning : (glossary!.simple ?? glossary!.definition ?? '');
   const importance = topic && (topic.interviewQuestions?.length ?? 0) > 0 ? 'High' : 'Contextual';
 
   const go = () => {

@@ -6,7 +6,8 @@
  * visual or glossary term — never hard-code a route or reach into a data
  * file directly.
  *
- * Technologies: Java, Kafka, React. New modules plug in here by adding imports
+ * Technologies: Java, Kafka, React, Spring Boot, System Design, GenAI,
+ * MLOps & AIOps, Angular. New modules plug in here by adding imports
  * and merging into the combined arrays below.
  */
 
@@ -23,15 +24,71 @@ import { reactTopics } from '../data/react/topics';
 import { reactQuestions } from '../data/react/questions';
 import { reactVisuals } from '../data/react/visuals';
 import { reactGlossary } from '../data/react/glossary';
+import { springBootTopics } from '../data/spring-boot/topics';
+import { springBootQuestions } from '../data/spring-boot/questions';
+import { springBootVisuals } from '../data/spring-boot/visuals';
+import { springBootGlossary } from '../data/spring-boot/glossary';
+import { systemDesignTopics } from '../data/system-design/topics';
+import { systemDesignQuestions } from '../data/system-design/questions';
+import { systemDesignVisuals } from '../data/system-design/visuals';
+import { systemDesignGlossary } from '../data/system-design/glossary';
+import { genaiTopics } from '../data/genai/topics';
+import { genaiQuestions } from '../data/genai/questions';
+import { genaiVisuals } from '../data/genai/visuals';
+import { genaiGlossary } from '../data/genai/glossary';
+import { mlopsTopics } from '../data/mlops/topics';
+import { mlopsQuestions } from '../data/mlops/questions';
+import { mlopsVisuals } from '../data/mlops/visuals';
+import { mlopsGlossary } from '../data/mlops/glossary';
+import { angularTopics } from '../data/angular/topics';
+import { angularQuestions } from '../data/angular/questions';
+import { angularVisuals } from '../data/angular/visuals';
+import { angularGlossary } from '../data/angular/glossary';
 import { ALIASES, normalizeTerm } from '../utils/normalize';
 import type { GlossaryTerm, InterviewQuestion, LearningTopic, LearningVisual } from '../types';
 
 /* ---------------------------------------- combined cross-technology maps */
 
-const allTopicsRaw = [...javaTopics, ...kafkaTopics, ...reactTopics];
-const allQuestionsRaw = [...javaQuestions, ...kafkaQuestions, ...reactQuestions];
-const allVisualsRaw = [...javaVisuals, ...kafkaVisuals, ...reactVisuals];
-const allGlossaryRaw = [...javaGlossary, ...kafkaGlossary, ...reactGlossary];
+const allTopicsRaw = [
+  ...javaTopics,
+  ...kafkaTopics,
+  ...reactTopics,
+  ...springBootTopics,
+  ...systemDesignTopics,
+  ...genaiTopics,
+  ...mlopsTopics,
+  ...angularTopics,
+];
+const allQuestionsRaw = [
+  ...javaQuestions,
+  ...kafkaQuestions,
+  ...reactQuestions,
+  ...springBootQuestions,
+  ...systemDesignQuestions,
+  ...genaiQuestions,
+  ...mlopsQuestions,
+  ...angularQuestions,
+];
+const allVisualsRaw = [
+  ...javaVisuals,
+  ...kafkaVisuals,
+  ...reactVisuals,
+  ...springBootVisuals,
+  ...systemDesignVisuals,
+  ...genaiVisuals,
+  ...mlopsVisuals,
+  ...angularVisuals,
+];
+const allGlossaryRaw = [
+  ...javaGlossary,
+  ...kafkaGlossary,
+  ...reactGlossary,
+  ...springBootGlossary,
+  ...systemDesignGlossary,
+  ...genaiGlossary,
+  ...mlopsGlossary,
+  ...angularGlossary,
+];
 
 const topicsById = new Map(allTopicsRaw.map((t) => [t.id, t]));
 const questionsById = new Map(allQuestionsRaw.map((q) => [q.id, q]));
@@ -93,21 +150,35 @@ export function topicsByTechnology(technology: string) {
   return allTopicsRaw.filter((t) => t.technology === technology);
 }
 
+/**
+ * Owning module of a question. New modules set `technology` explicitly;
+ * legacy Java/Kafka/React questions are resolved by their id prefix.
+ */
+export function questionTechnology(q: InterviewQuestion): string {
+  if (q.technology) return q.technology;
+  if (q.id.startsWith('q-kafka-')) return 'kafka';
+  if (q.id.startsWith('q-react-')) return 'react';
+  return 'java';
+}
+
+export function glossaryTechnology(g: GlossaryTerm): string {
+  if (g.technology) return g.technology;
+  if (g.id.startsWith('kafka-glossary-')) return 'kafka';
+  if (g.id.startsWith('react-glossary-')) return 'react';
+  return 'java';
+}
+
 export function questionsByTechnology(technology: string) {
-  return allQuestionsRaw.filter((q) => {
-    // Questions don't have a technology field directly — ids are prefixed per module.
-    if (technology === 'kafka') return q.id.startsWith('q-kafka-');
-    if (technology === 'react') return q.id.startsWith('q-react-');
-    return !q.id.startsWith('q-kafka-') && !q.id.startsWith('q-react-');
-  });
+  return allQuestionsRaw.filter((q) => questionTechnology(q) === technology);
+}
+
+/** Distinct question categories for a module, in first-appearance order. */
+export function questionCategoriesByTechnology(technology: string): string[] {
+  return Array.from(new Set(questionsByTechnology(technology).map((q) => q.category)));
 }
 
 export function glossaryByTechnology(technology: string) {
-  return allGlossaryRaw.filter((g) => {
-    if (technology === 'kafka') return g.id.startsWith('kafka-glossary-');
-    if (technology === 'react') return g.id.startsWith('react-glossary-');
-    return !g.id.startsWith('kafka-glossary-') && !g.id.startsWith('react-glossary-');
-  });
+  return allGlossaryRaw.filter((g) => glossaryTechnology(g) === technology);
 }
 
 export function topicsByCategory(category: string, technology?: string) {

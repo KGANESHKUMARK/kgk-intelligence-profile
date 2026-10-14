@@ -116,7 +116,7 @@ export interface LearningVisual {
 export interface AiAwareness {
   strongAnswerShouldMention: string[];
   weakAnswer: string;
-  redFlags: string[];
+  redFlags?: string[];
   likelyFollowUp: string[];
 }
 
@@ -143,6 +143,8 @@ export interface LearningTopic {
   internalWorking?: string;
 
   codeExample?: string;
+  /** Display label for the code block (defaults to the module's primary language). */
+  codeLanguage?: string;
   codeOutput?: string;
   whyOutput?: string;
 
@@ -170,32 +172,49 @@ export interface LearningTopic {
 
 export interface InterviewQuestion {
   id: string;
+  /** Owning module. Legacy Java/Kafka/React questions omit this and are resolved by id prefix. */
+  technology?: string;
   question: string;
   category: string;
   difficulty: Difficulty;
+  /** Optional tags for filtering/search — not rendered in the card. */
+  tags?: string[];
+  /** Topic this question belongs to. Used for related-content links. */
+  topicId?: string;
 
   quickAnswer: string;
   interviewAnswer: string;
-  detailedAnswer: string;
-  seniorAnswer: string;
+  /** Expanded explanation shown in the "Detailed" answer level tab. Fallback to interviewAnswer if absent. */
+  detailedAnswer?: string;
+  /** Senior/architect-level nuance shown in the "Senior" answer level tab. Fallback to interviewAnswer if absent. */
+  seniorAnswer?: string;
 
   keyTerms: string[];
-  conceptsTested: string[];
+  /** What skills/concepts this question is designed to probe. */
+  conceptsTested?: string[];
 
   prerequisites?: TopicId[];
   relatedTopics?: TopicId[];
-  /** IDs of other InterviewQuestions this one commonly leads to. */
+  /** IDs of other InterviewQuestions this one commonly leads to (navigable follow-up chain). */
   followUps?: string[];
+  /** Free-text follow-up prompts with hints — not navigable, shown as learning guidance. */
+  followUpQuestions?: { question: string; hint: string }[];
 
   commonMistakes?: string[];
   strongAnswerKeywords?: string[];
 
   codeExample?: string;
+  /** Display label for the code block (defaults to the module's primary language). */
+  codeLanguage?: string;
   expectedOutput?: string;
+  /** Alias for expectedOutput — accepted for authoring convenience. */
+  codeOutput?: string;
 
   /** "What is the interviewer testing?" — teaches intent, not just content. */
   interviewerIntent?: string;
   whatIsBeingTested?: string[];
+  /** Alias for whatIsBeingTested — accepted for authoring convenience. */
+  whatIsTested?: string[];
 
   aiAwareness?: AiAwareness;
 }
@@ -204,10 +223,16 @@ export interface InterviewQuestion {
 
 export interface GlossaryTerm {
   id: string;
+  /** Owning module. Legacy Java/Kafka/React terms omit this and are resolved by id prefix. */
+  technology?: string;
   term: string;
-  simple: string;
-  technical: string;
-  keyWords: string[];
+  /** Plain-language explanation (shown to non-experts). Fallback: definition. */
+  simple?: string;
+  /** Full technical definition. Fallback: definition. */
+  technical?: string;
+  keyWords?: string[];
+  /** Authoring convenience alias — used when simple/technical split is not practical. */
+  definition?: string;
   relatedTopics?: TopicId[];
   reference?: LearningReference;
 }

@@ -101,7 +101,7 @@ function FlowBody({ nodes }: { nodes: VisualNode[] }) {
 /** Two-column comparison/memory rendering. */
 function ComparisonBody({ columns }: { columns: NonNullable<LearningVisual['columns']> }) {
   return (
-    <div className={cn('grid gap-3', columns.length === 2 ? 'sm:grid-cols-2' : '')}>
+    <div className={cn('grid gap-3', columns.length === 2 ? 'sm:grid-cols-2' : columns.length === 3 ? 'md:grid-cols-3' : '')}>
       {columns.map((col) => (
         <div key={col.label} className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
           <p className="mono-label mb-2.5">{col.label}</p>

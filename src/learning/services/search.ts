@@ -8,8 +8,17 @@
  */
 
 import { matches } from '../../lib/utils';
-import { allGlossary, allQuestions, allTopics, allVersions, topicRoute } from './registry';
+import {
+  allGlossary,
+  allQuestions,
+  allTopics,
+  allVersions,
+  glossaryTechnology,
+  questionTechnology,
+  topicRoute,
+} from './registry';
 import { ALIASES, normalizeTerm } from '../utils/normalize';
+import type { GlossaryTerm, InterviewQuestion } from '../types';
 
 export type SearchResultType = 'topic' | 'question' | 'glossary' | 'version';
 
@@ -22,16 +31,12 @@ export interface SearchResult {
   keywords: string[];
 }
 
-function questionRoute(id: string): string {
-  if (id.startsWith('q-kafka-')) return `/learning/kafka/interview?q=${id}`;
-  if (id.startsWith('q-react-')) return `/learning/react/interview?q=${id}`;
-  return `/learning/java/interview?q=${id}`;
+function questionRoute(q: InterviewQuestion): string {
+  return `/learning/${questionTechnology(q)}/interview?q=${q.id}`;
 }
 
-function glossaryRoute(id: string): string {
-  if (id.startsWith('kafka-glossary-')) return `/learning/kafka/glossary?term=${id}`;
-  if (id.startsWith('react-glossary-')) return `/learning/react/glossary?term=${id}`;
-  return `/learning/java/glossary?term=${id}`;
+function glossaryRoute(g: GlossaryTerm): string {
+  return `/learning/${glossaryTechnology(g)}/glossary?term=${g.id}`;
 }
 
 function buildIndex(): SearchResult[] {
@@ -49,8 +54,8 @@ function buildIndex(): SearchResult[] {
     type: 'question',
     title: q.question,
     subtitle: q.category,
-    route: questionRoute(q.id),
-    keywords: [q.question, q.category, ...q.keyTerms, ...q.conceptsTested],
+    route: questionRoute(q),
+    keywords: [q.question, q.category, ...(q.keyTerms ?? []), ...(q.conceptsTested ?? [])],
   }));
 
   const glossaryResults: SearchResult[] = allGlossary.map((g) => ({
@@ -58,8 +63,8 @@ function buildIndex(): SearchResult[] {
     type: 'glossary',
     title: g.term,
     subtitle: 'Glossary',
-    route: glossaryRoute(g.id),
-    keywords: [g.term, ...g.keyWords],
+    route: glossaryRoute(g),
+    keywords: [g.term, ...(g.keyWords ?? [])],
   }));
 
   const versionResults: SearchResult[] = allVersions.map((v) => ({

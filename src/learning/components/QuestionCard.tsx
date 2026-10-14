@@ -5,7 +5,8 @@ import type { AnswerLevel, InterviewQuestion } from '../types';
 import { AnswerLevelTabs } from './AnswerLevelTabs';
 import { LearningTerm } from './LearningTerm';
 import { Button } from '../../components/common/Button';
-import { getQuestion } from '../services/registry';
+import { getQuestion, questionTechnology } from '../services/registry';
+import { techLanguage } from '../utils/tech';
 import { useLearningProgress, type Confidence } from '../hooks/useLearningProgress';
 import { cn } from '../../lib/utils';
 import { EASE } from '../../lib/motion';
@@ -48,8 +49,8 @@ export function QuestionCard({
       : level === 'interview'
         ? question.interviewAnswer
         : level === 'detailed'
-          ? question.detailedAnswer
-          : question.seniorAnswer;
+          ? (question.detailedAnswer ?? question.interviewAnswer)
+          : (question.seniorAnswer ?? question.interviewAnswer);
 
   const confidence = questionConfidence[question.id];
 
@@ -120,10 +121,10 @@ export function QuestionCard({
           </div>
 
           {/* Key terms */}
-          {question.keyTerms.length > 0 && (
+          {(question.keyTerms?.length ?? 0) > 0 && (
             <div className="mt-4 flex flex-wrap items-center gap-1.5">
               <span className="mono-label mr-1">Key terms</span>
-              {question.keyTerms.map((term) => (
+              {(question.keyTerms ?? []).map((term) => (
                 <span key={term} className="text-[0.8125rem]">
                   <LearningTerm term={term} />
                 </span>
@@ -167,7 +168,11 @@ export function QuestionCard({
                 transition={{ duration: 0.25, ease: EASE }}
                 className="overflow-hidden"
               >
-                <CodeBlock code={question.codeExample} output={question.expectedOutput} />
+                <CodeBlock
+                  code={question.codeExample}
+                  output={question.expectedOutput}
+                  language={question.codeLanguage ?? techLanguage(questionTechnology(question))}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -261,9 +266,9 @@ function IntentPanel({ question }: { question: InterviewQuestion }) {
       {question.interviewerIntent && (
         <p className="text-[0.8125rem] leading-relaxed text-[var(--text-2)]">{question.interviewerIntent}</p>
       )}
-      {question.whatIsBeingTested && question.whatIsBeingTested.length > 0 && (
+      {((question.whatIsBeingTested ?? question.whatIsTested) ?? []).length > 0 && (
         <ul className="mt-2 space-y-1">
-          {question.whatIsBeingTested.map((t) => (
+          {(question.whatIsBeingTested ?? question.whatIsTested ?? []).map((t) => (
             <li key={t} className="flex gap-2 text-[0.8125rem] text-[var(--text-2)]">
               <span className="text-[var(--ai-text)]" aria-hidden="true">
                 &#10003;
@@ -292,11 +297,11 @@ function IntentPanel({ question }: { question: InterviewQuestion }) {
   );
 }
 
-export function CodeBlock({ code, output }: { code: string; output?: string }) {
+export function CodeBlock({ code, output, language = 'Java' }: { code: string; output?: string; language?: string }) {
   return (
     <div className="mt-3 overflow-hidden rounded-lg border border-[var(--line)]">
       <div className="border-b border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5">
-        <span className="mono-label">Java</span>
+        <span className="mono-label">{language}</span>
       </div>
       <pre className="overflow-x-auto bg-[var(--surface)] p-3.5 font-mono text-[0.75rem] leading-relaxed text-[var(--text-2)]">
         <code>{code}</code>

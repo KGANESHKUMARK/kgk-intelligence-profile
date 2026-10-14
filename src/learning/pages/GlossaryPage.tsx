@@ -19,7 +19,7 @@ export default function GlossaryPage({ technology = 'java' }: { technology?: str
   const [query, setQuery] = useState('');
 
   const results = useMemo(
-    () => glossary.filter((g) => matches(query, g.term, g.simple, g.technical, g.keyWords)),
+    () => glossary.filter((g) => matches(query, g.term, g.simple ?? g.definition, g.technical ?? g.definition, ...(g.keyWords ?? []))),
     [glossary, query],
   );
 
@@ -70,16 +70,18 @@ export default function GlossaryPage({ technology = 'java' }: { technology?: str
 
               <p className="mt-2.5 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
                 <span className="mono-label mr-2">simple</span>
-                {term.simple}
+                {term.simple ?? term.definition}
               </p>
-              <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
-                <span className="mono-label mr-2">technical</span>
-                {term.technical}
-              </p>
+              {(term.technical ?? term.definition) && term.technical !== term.simple && (
+                <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-2)]">
+                  <span className="mono-label mr-2">technical</span>
+                  {term.technical ?? term.definition}
+                </p>
+              )}
 
               <div className="mt-3 flex flex-wrap items-center gap-1.5">
                 <span className="mono-label mr-1">Key words</span>
-                {term.keyWords.map((k) => (
+                {(term.keyWords ?? []).map((k) => (
                   <span
                     key={k}
                     className="rounded border border-[var(--line-strong)] bg-[var(--surface-2)] px-1.5 py-1 font-mono text-[0.6875rem] text-[var(--text-2)]"

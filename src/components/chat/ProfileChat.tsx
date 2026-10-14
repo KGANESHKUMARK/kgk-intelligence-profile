@@ -7,7 +7,7 @@ import { CHAT_SUGGESTIONS } from '../../lib/profileContext';
 import { trackEvent } from '../../lib/analytics';
 import { cn } from '../../lib/utils';
 import { EASE } from '../../lib/motion';
-import { ChatMessageBubble } from './ChatMessage';
+import { ChatMessageBubble, FollowUpSuggestions } from './ChatMessage';
 
 /**
  * ProfileChat — floating chat widget powered by Hugging Face Inference API.
@@ -49,9 +49,14 @@ export function ProfileChat() {
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isStreaming || cooldown > 0) return;
-    trackEvent('chat_message_sent', { length: input.length });
-    sendMessage(input);
-    setInput('');
+    // Only clear the input / track the event once sendMessage confirms the
+    // message actually went out — it can still silently reject (cooldown
+    // race) even when the checks above passed, and clearing the box then
+    // would make the question vanish instead of just being sent.
+    if (sendMessage(input)) {
+      trackEvent('chat_message_sent', { length: input.length });
+      setInput('');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -63,8 +68,7 @@ export function ProfileChat() {
 
   const handleSuggestion = (suggestion: string) => {
     if (isStreaming || cooldown > 0) return;
-    trackEvent('chat_suggestion_clicked', { suggestion });
-    sendMessage(suggestion);
+    if (sendMessage(suggestion)) trackEvent('chat_suggestion_clicked', { suggestion });
   };
 
   const handleOpen = () => {
@@ -224,14 +228,30 @@ export function ProfileChat() {
               )}
 
               {/* Messages */}
-              {messages.map((m, i) => (
-                <ChatMessageBubble
-                  key={m.id}
-                  role={m.role}
-                  content={m.content}
-                  isStreaming={isStreaming && m.role === 'assistant' && i === messages.length - 1}
-                />
-              ))}
+              {messages.map((m, i) => {
+                const isLastAssistant =
+                  m.role === 'assistant' &&
+                  i === messages.length - 1 &&
+                  !isStreaming &&
+                  m.content &&
+                  !m.content.startsWith('⚠️');
+                return (
+                  <div key={m.id} className="space-y-2.5">
+                    <ChatMessageBubble
+                      role={m.role}
+                      content={m.content}
+                      isStreaming={isStreaming && m.role === 'assistant' && i === messages.length - 1}
+                    />
+                    {isLastAssistant && (
+                      <FollowUpSuggestions
+                        messages={messages}
+                        onSelect={handleSuggestion}
+                        disabled={isStreaming || cooldown > 0}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* ── Input ─────────────────────────────────────────────── */}

@@ -3,49 +3,42 @@ import { Command, GraduationCap, Moon, Sun, UserRound } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { useAppState } from '../../hooks/useAppState';
 import { cn } from '../../lib/utils';
-import { techLabel } from '../utils/tech';
+import { isKnownTrack, techLabel, TRACK_IDS } from '../utils/tech';
 
 /**
  * Per-track navigation. The active track is derived from the URL so each
- * module (Java, Kafka, React) shows its own sections in the header.
+ * module shows its own sections in the header. Java has extra version-aware
+ * sections; every other module shares the standard set.
  */
-const TRACK_NAV: Record<string, { label: string; to: string }[]> = {
-  java: [
-    { label: 'Java Home', to: '/learning/java' },
-    { label: "What's New", to: '/learning/java/latest' },
-    { label: 'Versions', to: '/learning/java/versions' },
-    { label: 'Interview', to: '/learning/java/interview' },
-    { label: 'Flashcards', to: '/learning/java/flashcards' },
-    { label: 'Quiz', to: '/learning/java/quiz' },
-    { label: 'Glossary', to: '/learning/java/glossary' },
-  ],
-  kafka: [
-    { label: 'Kafka Home', to: '/learning/kafka' },
-    { label: 'Interview', to: '/learning/kafka/interview' },
-    { label: 'Flashcards', to: '/learning/kafka/flashcards' },
-    { label: 'Glossary', to: '/learning/kafka/glossary' },
-  ],
-  react: [
-    { label: 'React Home', to: '/learning/react' },
-    { label: 'Interview', to: '/learning/react/interview' },
-    { label: 'Flashcards', to: '/learning/react/flashcards' },
-    { label: 'Glossary', to: '/learning/react/glossary' },
-  ],
-};
-
-const TRACKS = [
-  { id: 'java', label: 'Java' },
-  { id: 'kafka', label: 'Kafka' },
-  { id: 'react', label: 'React' },
+const JAVA_NAV = [
+  { label: 'Java Home', to: '/learning/java' },
+  { label: "What's New", to: '/learning/java/latest' },
+  { label: 'Versions', to: '/learning/java/versions' },
+  { label: 'Interview', to: '/learning/java/interview' },
+  { label: 'Flashcards', to: '/learning/java/flashcards' },
+  { label: 'Quiz', to: '/learning/java/quiz' },
+  { label: 'Glossary', to: '/learning/java/glossary' },
 ];
+
+function trackNav(track: string): { label: string; to: string }[] {
+  if (track === 'java') return JAVA_NAV;
+  return [
+    { label: `${techLabel(track)} Home`, to: `/learning/${track}` },
+    { label: 'Interview', to: `/learning/${track}/interview` },
+    { label: 'Flashcards', to: `/learning/${track}/flashcards` },
+    { label: 'Glossary', to: `/learning/${track}/glossary` },
+  ];
+}
+
+const TRACKS = TRACK_IDS.map((id) => ({ id, label: techLabel(id) }));
 
 export function LearningLayout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme, setPaletteOpen } = useAppState();
   const location = useLocation();
 
-  const trackMatch = /^\/learning\/(java|kafka|react)(\/|$)/.exec(location.pathname);
-  const track = trackMatch?.[1] ?? 'java';
-  const nav = TRACK_NAV[track] ?? TRACK_NAV.java;
+  const segment = /^\/learning\/([^/]+)/.exec(location.pathname)?.[1] ?? 'java';
+  const track = isKnownTrack(segment) ? segment : 'java';
+  const nav = trackNav(track);
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -62,25 +55,6 @@ export function LearningLayout({ children }: { children: React.ReactNode }) {
               <span className="mono-label text-[0.625rem]">Learning Hub</span>
             </span>
           </Link>
-
-          {/* Track switcher */}
-          <nav aria-label="Learning modules" className="hidden items-center gap-0.5 lg:flex">
-            {TRACKS.map((t) => (
-              <Link
-                key={t.id}
-                to={`/learning/${t.id}`}
-                aria-current={track === t.id ? 'true' : undefined}
-                className={cn(
-                  'rounded-lg px-2.5 py-2 text-[0.8125rem] font-semibold whitespace-nowrap transition-colors',
-                  track === t.id
-                    ? 'bg-[var(--accent-soft)] text-[var(--accent-text)]'
-                    : 'text-[var(--text-3)] hover:text-[var(--text-2)]',
-                )}
-              >
-                {techLabel(t.id)}
-              </Link>
-            ))}
-          </nav>
 
           <nav aria-label="Learning sections" className="hide-scrollbar mx-auto hidden items-center gap-0.5 overflow-x-auto lg:flex">
             {nav.map((item) => {
@@ -120,6 +94,27 @@ export function LearningLayout({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
         </div>
+
+        {/* Desktop track switcher — its own row so the module list can grow. */}
+        <nav aria-label="Learning modules" className="hidden border-t border-[var(--line)] lg:block">
+          <div className="hide-scrollbar mx-auto flex max-w-[1240px] items-center gap-0.5 overflow-x-auto px-4 py-1.5 sm:px-6 lg:px-8">
+            {TRACKS.map((t) => (
+              <Link
+                key={t.id}
+                to={`/learning/${t.id}`}
+                aria-current={track === t.id ? 'true' : undefined}
+                className={cn(
+                  'rounded-lg px-2.5 py-1.5 text-[0.8125rem] font-semibold whitespace-nowrap transition-colors',
+                  track === t.id
+                    ? 'bg-[var(--accent-soft)] text-[var(--accent-text)]'
+                    : 'text-[var(--text-3)] hover:text-[var(--text-2)]',
+                )}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
 
         {/* Mobile nav */}
         <div className="hide-scrollbar flex items-center gap-1 overflow-x-auto border-t border-[var(--line)] px-4 py-2 lg:hidden">

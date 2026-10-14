@@ -77,7 +77,8 @@ export const jvmTopics: LearningTopic[] = [
     seniorInsight:
       'When diagnosing a production memory issue, the first branch point is exactly this distinction: a StackOverflowError points at recursion/call depth on one thread, while heap growth or GC pressure points at object lifetime and reachability across the whole application — they require completely different tools (thread dump vs. heap dump/JFR).',
     prerequisites: [],
-    relatedTopics: ['jvm', 'garbage-collection'],
+    relatedTopics: ['jvm', 'garbage-collection', 'jvm-memory-areas'],
+    nextTopics: ['jvm-memory-areas'],
     references: [
       {
         title: 'The Java Virtual Machine Specification — Chapter 2: The Structure of the Java Virtual Machine',
@@ -127,7 +128,8 @@ export const jvmTopics: LearningTopic[] = [
       ],
     },
     prerequisites: ['jvm', 'heap-vs-stack'],
-    relatedTopics: ['jvm', 'heap-vs-stack'],
+    relatedTopics: ['jvm', 'heap-vs-stack', 'gc-tuning', 'heap-dump-analysis'],
+    nextTopics: ['gc-tuning', 'heap-dump-analysis'],
     references: [
       {
         title: 'HotSpot Virtual Machine Garbage Collection Tuning Guide',

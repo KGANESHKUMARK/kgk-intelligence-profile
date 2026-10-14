@@ -1,4 +1,5 @@
 import type { InterviewQuestion } from '../../../types';
+import { jvmMemoryQuestions } from './jvmMemory';
 
 /* ------------------------------------------------------------ Collections */
 
@@ -657,6 +658,7 @@ export const javaQuestions: InterviewQuestion[] = [
   ...collectionsQuestions,
   ...concurrencyQuestions,
   ...jvmQuestions,
+  ...jvmMemoryQuestions,
   ...java8Questions,
 ];
 

@@ -43,7 +43,7 @@ export const profile = {
   title: positioning.title,
   tagline: positioning.tagline,
 
-  altTitles: ['Senior Technical Lead', 'Lead AI Full Stack Developer'],
+  altTitles: ['Senior Technical Lead', 'Lead AI & Full Stack Java Engineer'],
 
   summary:
     'Programming professional with 13+ years designing and operating distributed systems for banking and capital markets. Specialised in Large Language Models, Generative AI and cloud-based AI pipelines across AWS, Azure and GCP — covering the full lifecycle from data ingestion and fine-tuning through RAG, evaluation and production deployment. Currently leading engineering on an event-driven Global Output Management platform at Bank of Julius Baer.',
@@ -55,7 +55,7 @@ export const profile = {
   yearsExperience: '13+',
   location: 'Singapore',
   currentCompany: 'Bank of Julius Baer',
-  currentRole: 'Senior Technical Lead | Full Stack Engineer',
+  currentRole: 'Senior Technical Lead | Lead AI & Full Stack Java Engineer',
   availability: 'Open to Lead / Principal engineering conversations',
 
   domains: ['Banking', 'Capital Markets', 'Wealth Management', 'Financial Services', 'Telecom OSS'],

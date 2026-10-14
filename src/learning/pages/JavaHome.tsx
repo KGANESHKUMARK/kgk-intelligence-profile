@@ -12,7 +12,7 @@ import {
   Sparkles,
   Zap,
 } from 'lucide-react';
-import { allQuestions, allTopics, topicsByCategory } from '../services/registry';
+import { questionsByTechnology, topicsByCategory, topicsByTechnology } from '../services/registry';
 import { javaVersions, latestLTS, latestVersion, VERSION_DATA_SOURCE_NOTE } from '../data/java/versions';
 import { useLearningProgress } from '../hooks/useLearningProgress';
 import { useLearningSeo } from '../hooks/useLearningSeo';
@@ -25,6 +25,9 @@ const CATEGORY_CARDS: { category: string; blurb: string; icon: React.ReactNode }
   { category: 'Java 8+', blurb: 'Lambdas, streams and Optional.', icon: <Layers size={16} strokeWidth={1.75} /> },
 ];
 
+const allTopics = topicsByTechnology('java');
+const allQuestions = questionsByTechnology('java');
+
 export default function JavaHome() {
   useLearningSeo(
     'Java Engineering Lab',
@@ -32,7 +35,9 @@ export default function JavaHome() {
   );
   const { topicsViewed, bookmarks, questionConfidence } = useLearningProgress();
 
-  const answeredCount = Object.keys(questionConfidence).length;
+  const answeredCount = allQuestions.filter((q) => q.id in questionConfidence).length;
+  const javaBookmarks = bookmarks.filter((id) => allTopics.some((t) => t.id === id));
+  const viewedCount = topicsViewed.filter((id) => allTopics.some((t) => t.id === id)).length;
 
   return (
     <div>
@@ -75,9 +80,9 @@ export default function JavaHome() {
       <section className="surface-card mt-4 p-5">
         <h2 className="mono-label mb-3">Your progress (stored locally on this device)</h2>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Progress label="Topics viewed" value={topicsViewed.length} total={allTopics.length} />
+          <Progress label="Topics viewed" value={viewedCount} total={allTopics.length} />
           <Progress label="Questions attempted" value={answeredCount} total={allQuestions.length} />
-          <Progress label="Bookmarked" value={bookmarks.length} total={allTopics.length} />
+          <Progress label="Bookmarked" value={javaBookmarks.length} total={allTopics.length} />
         </div>
       </section>
 
@@ -86,7 +91,7 @@ export default function JavaHome() {
         <h2 className="mono-label mb-3">Explore by area</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {CATEGORY_CARDS.map((card) => {
-            const topics = topicsByCategory(card.category);
+            const topics = topicsByCategory(card.category, 'java');
             return (
               <Link
                 key={card.category}
@@ -114,14 +119,14 @@ export default function JavaHome() {
       </section>
 
       {/* Bookmarks shortcut */}
-      {bookmarks.length > 0 && (
+      {javaBookmarks.length > 0 && (
         <section className="surface-card mt-4 p-5">
           <h2 className="mono-label mb-3 flex items-center gap-1.5">
             <Bookmark size={12} strokeWidth={2} aria-hidden="true" />
             My revision list
           </h2>
           <ul className="flex flex-wrap gap-2">
-            {bookmarks.map((id) => {
+            {javaBookmarks.map((id) => {
               const topic = allTopics.find((t) => t.id === id);
               if (!topic) return null;
               return (
@@ -141,10 +146,9 @@ export default function JavaHome() {
 
       {/* Scope note */}
       <p className="mt-6 text-[0.6875rem] leading-relaxed text-[var(--text-3)]">
-        Java Engineering Lab: {allTopics.filter((t) => t.technology === 'java').length} fully-built topics and{' '}
-        {allQuestions.filter((q) => !q.id.startsWith('q-kafka-')).length} interview questions across Collections,
-        Concurrency, JVM and Java 8+. The architecture is technology-agnostic — Kafka is live, Spring Boot, React,
-        Python and others plug into the same registry, visual and question engines.
+        Java Engineering Lab: {allTopics.length} fully-built topics and {allQuestions.length} interview questions
+        across Collections, Concurrency, JVM and Java 8+. The architecture is technology-agnostic — Spring Boot,
+        System Design, Kafka, React, Angular, GenAI and MLOps plug into the same registry, visual and question engines.
       </p>
     </div>
   );

@@ -12,7 +12,7 @@ import { getTopic, getVisual, getQuestion, topicRoute } from '../services/regist
 import { useLearningProgress } from '../hooks/useLearningProgress';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
-import { techLabel } from '../utils/tech';
+import { techLabel, techLanguage } from '../utils/tech';
 
 export default function TopicPage({ technology = 'java' }: { technology?: string }) {
   const { topicId = '' } = useParams();
@@ -146,7 +146,7 @@ export default function TopicPage({ technology = 'java' }: { technology?: string
       {/* Code + output */}
       {topic.codeExample && (
         <Section title="Code and output">
-          <CodeBlock code={topic.codeExample} output={topic.codeOutput} />
+          <CodeBlock code={topic.codeExample} output={topic.codeOutput} language={topic.codeLanguage ?? techLanguage(tech)} />
           {topic.whyOutput && (
             <div className="mt-3 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-3.5">
               <p className="mono-label mb-1.5">Why this output?</p>
@@ -209,7 +209,7 @@ export default function TopicPage({ technology = 'java' }: { technology?: string
             <div className="rounded-lg border border-[var(--risk-line)] bg-[var(--risk-soft)] p-3">
               <p className="mono-label mb-1.5 text-[var(--risk-text)]">Red flags</p>
               <ul className="space-y-1">
-                {topic.aiAwareness.redFlags.map((r) => (
+                {(topic.aiAwareness.redFlags ?? []).map((r) => (
                   <li key={r} className="text-[0.8125rem] leading-relaxed text-[var(--text-2)]">
                     {r}
                   </li>

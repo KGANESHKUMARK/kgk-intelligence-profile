@@ -7,6 +7,42 @@ import type { LearningVisual } from '../../../types';
 
 export const javaVisuals: LearningVisual[] = [
   {
+    id: 'jvm-memory-map',
+    topicId: 'jvm-memory-areas',
+    type: 'memory',
+    title: 'Full JVM process memory map',
+    description: 'Everything that counts toward the container memory limit — not just the heap.',
+    memoryTip: 'RSS ≈ Heap + Metaspace + Threads×Xss + Code Cache + Direct buffers + GC overhead.',
+    columns: [
+      {
+        label: 'Heap (-Xmx, GC-managed)',
+        nodes: [
+          { id: 'eden', label: 'Eden', caption: 'new objects (TLABs)' },
+          { id: 'survivor', label: 'Survivor S0 / S1', caption: 'aged by minor GC' },
+          { id: 'old', label: 'Old generation', caption: 'promoted, long-lived', topicId: 'gc-tuning' },
+          { id: 'string-pool', label: 'String pool & static values', caption: 'in heap since Java 7' },
+        ],
+      },
+      {
+        label: 'Non-heap (native)',
+        nodes: [
+          { id: 'meta', label: 'Metaspace', caption: 'class metadata', topicId: 'metaspace' },
+          { id: 'code-cache', label: 'Code cache', caption: 'JIT-compiled code' },
+          { id: 'direct', label: 'Direct buffers', caption: 'NIO / Netty, MaxDirectMemorySize' },
+          { id: 'gc-structs', label: 'GC & JVM internals', caption: 'card tables, remembered sets' },
+        ],
+      },
+      {
+        label: 'Per thread',
+        nodes: [
+          { id: 'jvm-stack', label: 'JVM stack (-Xss)', caption: 'frames, locals', topicId: 'heap-vs-stack' },
+          { id: 'pc', label: 'PC register', caption: 'current instruction' },
+          { id: 'native-stack', label: 'Native method stack', caption: 'JNI calls' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'hashmap-flow',
     topicId: 'hashmap',
     type: 'flow',

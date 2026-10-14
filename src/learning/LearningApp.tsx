@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { LearningLayout } from './components/LearningLayout';
+import { GENERIC_TRACK_IDS } from './utils/tech';
 
 /**
  * Route-level code splitting: the resume portal at "/" never downloads any
@@ -19,6 +20,32 @@ const GlossaryPage = lazy(() => import('./pages/GlossaryPage'));
 const VersionsPage = lazy(() => import('./pages/VersionsPage'));
 const VersionDetail = lazy(() => import('./pages/VersionDetail'));
 const LatestJava = lazy(() => import('./pages/LatestJava'));
+const TechHome = lazy(() => import('./pages/TechHome'));
+
+/**
+ * Generic module routes (Spring Boot, System Design, GenAI, MLOps, Angular…)
+ * resolve the module from the URL. Unknown modules fall back to the hub.
+ */
+type GenericPage = 'home' | 'topic' | 'category' | 'interview' | 'flashcards' | 'glossary';
+
+function GenericTrackRoute({ page }: { page: GenericPage }) {
+  const { tech = '' } = useParams();
+  if (!GENERIC_TRACK_IDS.includes(tech)) return <Navigate to="/learning" replace />;
+  switch (page) {
+    case 'home':
+      return <TechHome technology={tech} />;
+    case 'topic':
+      return <TopicPage key={tech} technology={tech} />;
+    case 'category':
+      return <CategoryPage technology={tech} />;
+    case 'interview':
+      return <InterviewPractice key={tech} technology={tech} />;
+    case 'flashcards':
+      return <Flashcards key={tech} technology={tech} />;
+    case 'glossary':
+      return <GlossaryPage key={tech} technology={tech} />;
+  }
+}
 
 function PageFallback() {
   return (
@@ -62,6 +89,14 @@ export default function LearningApp() {
           <Route path="react/interview" element={<InterviewPractice technology="react" />} />
           <Route path="react/flashcards" element={<Flashcards technology="react" />} />
           <Route path="react/glossary" element={<GlossaryPage technology="react" />} />
+
+          {/* Generic modules — explicit routes above always win over these params. */}
+          <Route path=":tech" element={<GenericTrackRoute page="home" />} />
+          <Route path=":tech/topic/:topicId" element={<GenericTrackRoute page="topic" />} />
+          <Route path=":tech/category/:category" element={<GenericTrackRoute page="category" />} />
+          <Route path=":tech/interview" element={<GenericTrackRoute page="interview" />} />
+          <Route path=":tech/flashcards" element={<GenericTrackRoute page="flashcards" />} />
+          <Route path=":tech/glossary" element={<GenericTrackRoute page="glossary" />} />
 
           {/* Unknown learning routes fall back to the hub rather than a dead end. */}
           <Route path="*" element={<Navigate to="/learning" replace />} />

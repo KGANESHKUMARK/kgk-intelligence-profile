@@ -14,7 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { streamChat, type ChatError, type ChatMessage } from '../lib/hfChat';
 
 const STORAGE_KEY = 'eip-chat-messages';
-const COOLDOWN_MS = 5000; // client-side rate limit guard (Groq free tier: 30 req/min)
+const COOLDOWN_MS = 3000; // client-side rate limit guard (Groq free tier: 30 req/min = 1 every 2s; 3s leaves headroom)
 
 type UIMessage = ChatMessage & { id: string; timestamp: number };
 
@@ -48,7 +48,8 @@ export interface UseChatReturn {
   error: ChatError | null;
   /** Seconds remaining on the cooldown timer, or 0 if ready. */
   cooldown: number;
-  sendMessage: (text: string) => void;
+  /** Returns true if the message was actually sent, false if rejected (cooldown/already streaming). */
+  sendMessage: (text: string) => boolean;
   abort: () => void;
   clear: () => void;
 }
@@ -94,15 +95,15 @@ export function useChat(): UseChatReturn {
   }, []);
 
   const sendMessage = useCallback(
-    (text: string) => {
-      if (!text.trim() || isStreaming) return;
+    (text: string): boolean => {
+      if (!text.trim() || isStreaming) return false;
 
       // Client-side cooldown to avoid hitting the 30 req/min rate limit.
       const elapsed = Date.now() - lastSentRef.current;
       if (elapsed < COOLDOWN_MS) {
         const remaining = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
         setCooldown(remaining);
-        return;
+        return false;
       }
 
       // Abort any previous request.
@@ -173,6 +174,8 @@ export function useChat(): UseChatReturn {
           controllerRef.current = null;
         },
       });
+
+      return true;
     },
     [isStreaming, messages],
   );

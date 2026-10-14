@@ -4,22 +4,18 @@ import { ArrowLeft, ArrowRight, Shuffle } from 'lucide-react';
 import { Breadcrumbs } from '../components/ContextBar';
 import { QuestionCard } from '../components/QuestionCard';
 import { Button } from '../../components/common/Button';
-import { questionsByTechnology } from '../services/registry';
-import { questionCategories } from '../data/java/questions';
-import { kafkaQuestionCategories } from '../data/kafka/questions';
-import { reactQuestionCategories } from '../data/react/questions';
+import { questionCategoriesByTechnology, questionsByTechnology } from '../services/registry';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
 import { techLabel } from '../utils/tech';
 import type { Difficulty } from '../types';
 
-const DIFFICULTIES: (Difficulty | 'All')[] = ['All', 'beginner', 'intermediate', 'advanced', 'senior'];
+const DIFFICULTIES: (Difficulty | 'All')[] = ['All', 'beginner', 'intermediate', 'advanced', 'senior', 'architect'];
 
 export default function InterviewPractice({ technology = 'java' }: { technology?: string }) {
   const techLabelValue = techLabel(technology);
   const allQuestions = questionsByTechnology(technology);
-  const categories =
-    technology === 'kafka' ? kafkaQuestionCategories : technology === 'react' ? reactQuestionCategories : questionCategories;
+  const categories = questionCategoriesByTechnology(technology);
 
   useLearningSeo(
     `${techLabel(technology)} Interview Practice`,

@@ -158,3 +158,147 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
     </motion.div>
   );
 });
+
+// ── Follow-up suggestions ────────────────────────────────────────────────────
+
+/** Keywords mapped to follow-up questions — grounded in Ganesh's profile. */
+const FOLLOWUP_MAP: { keywords: string[]; questions: string[] }[] = [
+  {
+    keywords: ['julius baer', 'gom', 'global output', 'event-driven'],
+    questions: [
+      'How does the Agentic AI assistant triage output failures?',
+      'What tech stack powers the GOM platform?',
+      'How does Ganesh handle Kafka consumer lag in production?',
+    ],
+  },
+  {
+    keywords: ['kafka', 'consumer', 'producer', 'partition', 'offset'],
+    questions: [
+      'Explain exactly-once semantics in Kafka',
+      'How do Kafka consumer groups work?',
+      'What is the role of Schema Registry in Kafka?',
+    ],
+  },
+  {
+    keywords: ['genai', 'llm', 'langchain', 'bedrock', 'rag', 'agent'],
+    questions: [
+      'How does Ganesh implement RAG with LangChain?',
+      'What AI Guardrails does Ganesh use in production?',
+      'How does Amazon Bedrock fit into the AI pipeline?',
+    ],
+  },
+  {
+    keywords: ['bny', 'newton', 'portfolio-iq', 'chatbot', 'award', 'hackcelerator'],
+    questions: [
+      'What did the Portfolio-IQ chatbot do?',
+      'What was the BNY Hackcelerator award for?',
+      'How was FAISS used in the RAG chatbot?',
+    ],
+  },
+  {
+    keywords: ['java', 'spring boot', 'microservice', 'spring'],
+    questions: [
+      'How does Ganesh design microservices with Spring Boot?',
+      'What Java 21 features does Ganesh use in production?',
+      'How does Ganesh handle transaction management in Java?',
+    ],
+  },
+  {
+    keywords: ['experience', 'year', 'role', 'lead', 'team', 'leadership'],
+    questions: [
+      'What is Ganesh\'s team leadership experience?',
+      'What domains has Ganesh worked in?',
+      'What is Ganesh\'s educational background?',
+    ],
+  },
+  {
+    keywords: ['skill', 'technology', 'tech stack', 'stack'],
+    questions: [
+      'What is Ganesh\'s experience with Python and FastAPI?',
+      'How does Ganesh use Kubernetes and Terraform?',
+      'What monitoring tools does Ganesh use?',
+    ],
+  },
+];
+
+const DEFAULT_FOLLOWUPS = [
+  'What is Ganesh\'s role at Bank of Julius Baer?',
+  'How does Ganesh use GenAI and LLMs in production?',
+  'What did the Portfolio-IQ chatbot do?',
+];
+
+/** Generate 3 follow-up questions based on the conversation context. */
+function generateFollowUps(messages: { role: string; content: string }[]): string[] {
+  // Combine all assistant + user messages for keyword matching.
+  const conversationText = messages.map((m) => m.content.toLowerCase()).join(' ');
+
+  // Find the best-matching category by counting keyword hits.
+  let bestQuestions = DEFAULT_FOLLOWUPS;
+  let bestScore = 0;
+
+  for (const entry of FOLLOWUP_MAP) {
+    const score = entry.keywords.filter((k) => conversationText.includes(k)).length;
+    if (score > bestScore) {
+      bestScore = score;
+      bestQuestions = entry.questions;
+    }
+  }
+
+  // Filter out questions that are very similar to what was already asked.
+  const askedQuestions = messages
+    .filter((m) => m.role === 'user')
+    .map((m) => m.content.toLowerCase());
+
+  const filtered = bestQuestions.filter(
+    (q) =>
+      !askedQuestions.some(
+        (a) =>
+          a.includes(q.toLowerCase().slice(0, 20)) ||
+          q.toLowerCase().includes(a.slice(0, 20)),
+      ),
+  );
+
+  // If we filtered too many, fall back to defaults.
+  return filtered.length >= 2 ? filtered.slice(0, 3) : bestQuestions.slice(0, 3);
+}
+
+interface FollowUpSuggestionsProps {
+  messages: { role: string; content: string }[];
+  onSelect: (question: string) => void;
+  disabled?: boolean;
+}
+
+export const FollowUpSuggestions = memo(function FollowUpSuggestions({
+  messages,
+  onSelect,
+  disabled,
+}: FollowUpSuggestionsProps) {
+  const followUps = generateFollowUps(messages);
+  if (followUps.length === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, delay: 0.1 }}
+      className="ml-8.5 flex flex-wrap gap-1.5"
+    >
+      {followUps.map((q) => (
+        <button
+          key={q}
+          type="button"
+          onClick={() => onSelect(q)}
+          disabled={disabled}
+          className={cn(
+            'rounded-full border px-2.5 py-1 text-[0.6875rem] leading-snug transition-all',
+            disabled
+              ? 'cursor-not-allowed border-[var(--line)] bg-[var(--surface-2)] text-[var(--text-3)] opacity-60'
+              : 'border-[var(--line)] bg-[var(--surface-2)] text-[var(--text-2)] hover:border-[var(--ai-line)] hover:bg-[var(--surface-3)] hover:text-[var(--ai-text)]',
+          )}
+        >
+          {q}
+        </button>
+      ))}
+    </motion.div>
+  );
+});

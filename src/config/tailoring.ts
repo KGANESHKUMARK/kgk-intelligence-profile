@@ -20,14 +20,14 @@ import type { SkillId } from '../data/skills';
 /** Ready-made positionings. Add your own — copy any block and edit it. */
 export const titleVariants = {
   'lead-ai-fullstack': {
-    title: 'Lead AI & Full Stack Engineer',
+    title: 'Lead AI & Full Stack Java Engineer',
     tagline:
       'Building enterprise-grade AI, banking platforms, intelligent automation and scalable software systems.',
     badges: [
       '13+ Years Engineering',
       'Banking & Capital Markets',
       'AI / GenAI',
-      'Full Stack',
+      'Java · Spring Boot',
       'Cloud & Platform Engineering',
     ],
   },

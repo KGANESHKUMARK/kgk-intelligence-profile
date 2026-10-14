@@ -3,16 +3,18 @@ import { ArrowRight, Lock } from 'lucide-react';
 import { allQuestions, allTopics } from '../services/registry';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 
-/** Future technology modules. Java, Kafka and React are built — the rest are honestly marked. */
+/** Technology modules. Built modules are clickable; planned ones are honestly marked. */
 const TECHNOLOGIES = [
-  { id: 'java', name: 'Java', blurb: 'Core language, collections, concurrency, JVM and modern Java.', available: true },
-  { id: 'spring-boot', name: 'Spring Boot', blurb: 'Dependency injection, web layer, data access, production config.', available: false },
-  { id: 'react', name: 'React', blurb: 'Rendering model, hooks, performance, server state, TypeScript, architecture.', available: true },
-  { id: 'python', name: 'Python', blurb: 'Language model, data tooling, async.', available: false },
-  { id: 'ai', name: 'AI / GenAI', blurb: 'LLMs, RAG, agents, evaluation.', available: false },
+  { id: 'java', name: 'Java', blurb: 'Collections, concurrency, JVM memory (heap, stack, metaspace, GC), diagnostics and modern Java.', available: true },
+  { id: 'spring-boot', name: 'Spring Boot & Microservices', blurb: 'DI, auto-config, transactions, Spring Cloud Gateway, resilience, security, Maven.', available: true },
+  { id: 'system-design', name: 'System Design', blurb: 'Scalability, caching, sharding, API Gateway, REST API design, case studies.', available: true },
   { id: 'kafka', name: 'Kafka', blurb: 'Topics, partitions, consumer groups, delivery semantics, Avro, Streams.', available: true },
+  { id: 'react', name: 'React', blurb: 'Rendering model, hooks, performance, server state, TypeScript, architecture.', available: true },
+  { id: 'angular', name: 'Angular', blurb: 'DI, RxJS, change detection and signals, reactive forms, routing, NgRx.', available: true },
+  { id: 'genai', name: 'GenAI', blurb: 'LLMs, RAG, prompt and context engineering, guardrails, LLMOps.', available: true },
+  { id: 'mlops', name: 'MLOps & AIOps', blurb: 'ML pipelines, model registry, drift monitoring, anomaly detection, auto-remediation.', available: true },
+  { id: 'python', name: 'Python', blurb: 'Language model, data tooling, async.', available: false },
   { id: 'kubernetes', name: 'Kubernetes', blurb: 'Workloads, scheduling, networking, operations.', available: false },
-  { id: 'system-design', name: 'System Design', blurb: 'Scalability, consistency, resilience patterns.', available: false },
 ];
 
 export default function LearningHome() {
@@ -28,7 +30,8 @@ export default function LearningHome() {
           the follow-up question that&apos;s coming next.
         </p>
         <p className="mt-3 font-mono text-[0.75rem] text-[var(--text-3)]">
-          {allTopics.length} topics · {allQuestions.length} interview questions · Java + Kafka + React
+          {allTopics.length} topics · {allQuestions.length} interview questions ·{' '}
+          {TECHNOLOGIES.filter((t) => t.available).length} modules
         </p>
       </header>
 
