@@ -2,55 +2,54 @@
  * AI CHAT CLIENT — multi-provider with automatic failover
  *
  * Browser-compatible providers (CORS-enabled), tried in priority order:
- *   1. Groq primary model   (VITE_GROQ_TOKEN)  — llama-3.1-8b-instant by default
- *   2. Groq fallback model  (VITE_GROQ_TOKEN)  — gemma2-9b-it (separate rate-limit bucket)
- *   3. HF Free Inference    (VITE_HF_TOKEN)    — api-inference.huggingface.co (NO credits needed)
+ *   1. Groq           (VITE_GROQ_TOKEN)         — primary, fast, free (30 req/min)
+ *   2. Google Gemini  (VITE_GOOGLE_TOKEN)        — 1M tokens/day FREE, most reliable fallback
+ *   3. OpenRouter     (VITE_OPENROUTER_TOKEN)    — free OSS models (:free suffix), no credits
+ *   4. HF Router      (VITE_HF_TOKEN)            — last resort; needs monthly free credits
  *
- * Why multiple Groq entries?
- *   Groq rate limits are per-model — using a second model gives a second independent
- *   quota bucket, so a 429 on model A automatically retries on model B.
- *
- * Why HF Inference API (not HF Router)?
- *   router.huggingface.co requires paid HF PRO credits.
- *   api-inference.huggingface.co/models/{model}/v1/chat/completions is FREE for
- *   public models that support the Text Generation Inference (TGI) format.
+ * How to get free keys (set in .env):
+ *   VITE_GROQ_TOKEN        → https://console.groq.com  (already configured)
+ *   VITE_GOOGLE_TOKEN      → https://aistudio.google.com/apikey  (2 min, completely free)
+ *   VITE_OPENROUTER_TOKEN  → https://openrouter.ai/settings/keys  (free account, free models)
+ *   VITE_HF_TOKEN          → https://huggingface.co/settings/tokens (monthly free allowance)
  *
  * Server-only providers (NOT CORS-enabled — need a Vercel Edge Function):
  *   - NVIDIA NIM  (VITE_NVIDIA_TOKEN)  — works server-side only, blocked by browser CORS
- *
- * Env vars (Vite):
- *   VITE_GROQ_TOKEN    — Groq API key (console.groq.com) — CORS ✅
- *   VITE_GROQ_MODEL    — optional primary Groq model override (default: llama-3.1-8b-instant)
- *   VITE_HF_TOKEN      — HF token (huggingface.co/settings/tokens) — CORS ✅
- *   VITE_HF_MODEL      — optional HF model override (default: Qwen/Qwen2.5-7B-Instruct)
- *   VITE_NVIDIA_TOKEN  — NVIDIA NIM key (build.nvidia.com) — server-only, CORS ❌
- *   VITE_NVIDIA_MODEL  — optional NVIDIA model override
  */
 
 import { getProfileContext, SYSTEM_PROMPT } from './profileContext';
 
 // ── Token + model config ─────────────────────────────────────────────────────
 
+// ── Token + model config ─────────────────────────────────────────────────────
+
 const GROQ_TOKEN = (import.meta.env.VITE_GROQ_TOKEN as string | undefined)?.trim();
-// qwen/qwen3.8-27b — the model confirmed working on this Groq account.
-// Rate-limit mitigation: context is now ~900 tokens (was ~2600), so 4-6 questions/min is typical.
 const GROQ_MODEL =
   (import.meta.env.VITE_GROQ_MODEL as string | undefined)?.trim() ?? 'qwen/qwen3.8-27b';
 
-// NVIDIA NIM: VITE_NVIDIA_TOKEN + VITE_NVIDIA_MODEL are NOT loaded in the browser.
-// NVIDIA's API doesn't support CORS, so browser fetch is blocked. These env vars
-// are intended for a future Vercel Edge Function (server-side, no CORS restriction).
-// When that's built, read import.meta.env.VITE_NVIDIA_TOKEN there.
+// Google Gemini — OpenAI-compatible endpoint, 1M tokens/day free, most reliable fallback.
+// Get a free key at: https://aistudio.google.com/apikey (no credit card needed)
+const GOOGLE_TOKEN = (import.meta.env.VITE_GOOGLE_TOKEN as string | undefined)?.trim();
+const GOOGLE_MODEL =
+  (import.meta.env.VITE_GOOGLE_MODEL as string | undefined)?.trim() ?? 'gemini-3.1-flash-lite';
 
+// OpenRouter — free OSS models (use ":free" suffix models, no billing needed).
+// Get a free key at: https://openrouter.ai/settings/keys
+const OPENROUTER_TOKEN = (import.meta.env.VITE_OPENROUTER_TOKEN as string | undefined)?.trim();
+const OPENROUTER_MODEL =
+  (import.meta.env.VITE_OPENROUTER_MODEL as string | undefined)?.trim() ??
+  'meta-llama/llama-3.1-8b-instruct:free';
+
+// HuggingFace Router — last resort; needs monthly free credits (resets each month).
 const HF_TOKEN = (import.meta.env.VITE_HF_TOKEN as string | undefined)?.trim();
-// HF Router — CORS-compatible, OpenAI-compatible. Requires HF PRO credits (free monthly allowance
-// resets each month). Used only as a fallback when Groq exhausts all retries.
 const HF_MODEL =
   (import.meta.env.VITE_HF_MODEL as string | undefined)?.trim() ?? 'Qwen/Qwen3.8-27B';
 
+// NVIDIA NIM: NOT included — browser CORS blocks it. Server-side (Vercel Edge) only.
+
 // ── Provider registry ────────────────────────────────────────────────────────
 
-type Provider = 'groq' | 'nvidia' | 'hf';
+type Provider = 'groq' | 'google' | 'openrouter' | 'hf' | 'nvidia';
 
 interface ProviderConfig {
   name: Provider;
@@ -58,13 +57,14 @@ interface ProviderConfig {
   token: string | undefined;
   url: string;
   model: string;
-  /** Extra body fields (e.g. chat_template_kwargs for NVIDIA). */
+  /** Extra headers beyond Authorization. */
+  extraHeaders?: Record<string, string>;
+  /** Extra body fields. */
   extraBody?: Record<string, unknown>;
 }
 
 const PROVIDERS: ProviderConfig[] = [
-  // ── Groq (primary) ───────────────────────────────────────────────────────
-  // Context is now ~900 tokens (was 2600+), so the token/min limit goes ~3× further.
+  // 1 ── Groq (primary — fast, 30 req/min free) ─────────────────────────────
   {
     name: 'groq',
     label: 'Groq · Qwen 3',
@@ -72,9 +72,30 @@ const PROVIDERS: ProviderConfig[] = [
     url: 'https://api.groq.com/openai/v1/chat/completions',
     model: GROQ_MODEL,
   },
-  // ── HuggingFace Router (fallback) ────────────────────────────────────────
-  // CORS-compatible, OpenAI-compatible. Needs HF PRO credits (free monthly allowance).
-  // NVIDIA NIM is NOT included — blocked by browser CORS; needs a Vercel Edge Function.
+  // 2 ── Google Gemini (best free fallback — 1M tokens/day, 15 RPM) ─────────
+  // OpenAI-compatible via /v1beta/openai/ endpoint. CORS supported.
+  // Free key: https://aistudio.google.com/apikey
+  {
+    name: 'google',
+    label: 'Google Gemini',
+    token: GOOGLE_TOKEN,
+    url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    model: GOOGLE_MODEL,
+  },
+  // 3 ── OpenRouter free models (no billing required for :free models) ────────
+  // Free key: https://openrouter.ai/settings/keys
+  {
+    name: 'openrouter',
+    label: 'OpenRouter · Llama 3.1',
+    token: OPENROUTER_TOKEN,
+    url: 'https://openrouter.ai/api/v1/chat/completions',
+    model: OPENROUTER_MODEL,
+    extraHeaders: {
+      'HTTP-Referer': 'https://ganeshkumar.dev',
+      'X-Title': 'Ganesh Portfolio Chat',
+    },
+  },
+  // 4 ── HuggingFace Router (last resort — monthly free credits, may deplete) ─
   {
     name: 'hf',
     label: 'Hugging Face · Qwen 3',
@@ -246,6 +267,7 @@ async function tryProvider(
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${provider.token}`,
+        ...provider.extraHeaders,
       },
       body: JSON.stringify({
         model: provider.model,
