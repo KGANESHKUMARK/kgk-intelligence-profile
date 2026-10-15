@@ -185,6 +185,90 @@ export const MODULE_HOMES: Record<string, ModuleHomeConfig> = {
     productionNote:
       'Based on building and operating 12 microservices in production: SLO burn rate alerting that replaced 200 threshold alerts, exemplars linking Grafana spikes to Jaeger traces, and MDC injection that reduced incident MTTR from 45 to 8 minutes.',
   },
+
+  security: {
+    id: 'security',
+    title: 'Security Engineering Lab',
+    tagline:
+      'OAuth 2.0, OIDC, JWT internals, OWASP API Top 10, secrets management, and zero trust architecture — the security depth expected of every Lead engineer.',
+    seoDescription:
+      'Security interview preparation — OAuth 2.0 authorization code PKCE flow, JWT attack vectors, BOLA/IDOR, mass assignment, SSRF, HashiCorp Vault, mTLS, and Istio zero trust.',
+    categoryCards: [
+      { category: 'Auth & Identity', blurb: 'OAuth 2.0 + OIDC flows, PKCE, JWT internals, RS256 vs HS256, token revocation.', icon: Lock },
+      { category: 'API Security', blurb: 'OWASP API Top 10: BOLA, mass assignment, SSRF, rate limiting, BFLA.', icon: ShieldCheck },
+      { category: 'Secrets & Cryptography', blurb: 'Vault dynamic secrets, AWS Secrets Manager, KMS envelope encryption, rotation.', icon: Layers },
+      { category: 'Network Security', blurb: 'Zero trust, mTLS, SPIFFE/SPIRE workload identity, Istio AuthorizationPolicy.', icon: Network },
+    ],
+    productionNote:
+      'Based on implementing OAuth 2.0 + Keycloak for a multi-tenant banking platform, discovering a BOLA vulnerability in a statement API during a security review, and rolling out Istio mTLS in STRICT mode to prevent lateral movement.',
+  },
+
+  database: {
+    id: 'database',
+    title: 'Database Internals Lab',
+    tagline:
+      'SQL query planning, index design, HikariCP pool sizing, and Redis patterns — the data layer depth that separates senior engineers from those who only use the ORM.',
+    seoDescription:
+      'Database interview preparation — PostgreSQL EXPLAIN ANALYZE, B-tree vs hash indexes, composite index leftmost prefix, HikariCP sizing, N+1 problem, Redis cache-aside, distributed locks, and cache stampede.',
+    categoryCards: [
+      { category: 'SQL Internals', blurb: 'B-tree indexes, EXPLAIN ANALYZE, query plan reading, N+1 problem, stale statistics.', icon: Database },
+      { category: 'Connection Pooling', blurb: 'HikariCP sizing formula, pool exhaustion, PgBouncer, RDS Proxy for Lambda.', icon: Server },
+      { category: 'Redis', blurb: 'Cache-aside, rate limiting (Lua), distributed lock, pub/sub vs Kafka, cache stampede.', icon: Zap },
+      { category: 'JPA / ORM', blurb: 'N+1 with EntityGraph, JOIN FETCH, batch fetch size, optimistic vs pessimistic locking.', icon: Boxes },
+    ],
+    productionNote:
+      'Based on diagnosing a 4.2s → 1.8ms query fix with a composite partial index, eliminating 847 SQL queries per API call via EntityGraph, and preventing double-charges with @Version optimistic locking.',
+  },
+
+  cicd: {
+    id: 'cicd',
+    title: 'CI/CD & DevOps Lab',
+    tagline:
+      'GitHub Actions, GitOps with ArgoCD, blue-green, canary, and feature flags — the delivery engineering practices of elite engineering teams.',
+    seoDescription:
+      'CI/CD interview preparation — GitHub Actions pipeline design, SonarQube quality gate, Trivy CVE scanning, GitOps ArgoCD, Argo Rollouts canary with Prometheus auto-rollback, blue-green database migration, and feature flags.',
+    categoryCards: [
+      { category: 'CI Pipelines', blurb: 'GitHub Actions, Maven parallel builds, SonarQube, Trivy, dependency scanning, caching.', icon: GitBranch },
+      { category: 'GitOps', blurb: 'ArgoCD sync, self-heal, drift detection, app-of-apps pattern, config repo separation.', icon: Repeat },
+      { category: 'Deployment Strategies', blurb: 'Blue-green, canary (Argo Rollouts), feature flags, expand-contract DB migration, DORA.', icon: Workflow },
+    ],
+    productionNote:
+      'Based on reducing CI cycle time from 25 to 7 minutes via parallel jobs, implementing ArgoCD self-heal that caught a manual scale-down during an incident, and rolling out a new payment engine via feature flag to 5% of premium users before full activation.',
+  },
+
+  'java-concurrency': {
+    id: 'java-concurrency',
+    title: 'Java Concurrency Lab',
+    tagline:
+      'CompletableFuture, Project Loom virtual threads, reactive streams, and thread-safe collections — advanced concurrency for senior Java engineers.',
+    seoDescription:
+      'Java concurrency interview preparation — CompletableFuture thenApply vs thenCompose vs thenCombine, virtual threads (Project Loom), thread pinning, StructuredTaskScope, ConcurrentHashMap, ReentrantLock, Project Reactor Mono Flux back-pressure, flatMap vs concatMap.',
+    categoryCards: [
+      { category: 'Async Programming', blurb: 'CompletableFuture operators, custom executor for I/O, allOf with timeout, exception handling.', icon: Zap },
+      { category: 'Virtual Threads', blurb: 'Project Loom: carrier threads, pinning, ReentrantLock fix, StructuredTaskScope, Spring Boot 3.2.', icon: Activity },
+      { category: 'Thread Safety', blurb: 'ConcurrentHashMap.compute, CopyOnWriteArrayList, BlockingQueue, optimistic locking.', icon: ShieldCheck },
+      { category: 'Reactive Streams', blurb: 'Project Reactor: Mono, Flux, back-pressure, flatMap vs concatMap, Schedulers.boundedElastic.', icon: Repeat },
+    ],
+    productionNote:
+      'Based on cutting payment validation from 160ms to 80ms via CompletableFuture parallel fan-out, migrating from 200 platform threads to virtual threads (single property change), and fixing a double-charge bug caused by a check-then-act race condition.',
+  },
+
+  testing: {
+    id: 'testing',
+    title: 'Testing Strategy Lab',
+    tagline:
+      'Test pyramid, TDD, TestContainers, Pact contract testing, and chaos engineering — the testing maturity expected of senior engineers who own production quality.',
+    seoDescription:
+      'Testing strategy interview preparation — test pyramid 70/20/10 ratio, TDD Red-Green-Refactor, TestContainers vs H2, @WebMvcTest vs @DataJpaTest vs @SpringBootTest, Pact consumer-driven contracts, can-i-deploy gate, chaos engineering with Toxiproxy and AWS FIS, mutation testing with PIT.',
+    categoryCards: [
+      { category: 'Testing Strategy', blurb: 'Test pyramid, TDD, mutation testing (PIT), ice cream anti-pattern, test as documentation.', icon: BookOpen },
+      { category: 'Integration Testing', blurb: 'TestContainers real PostgreSQL/Kafka, @WebMvcTest, @DataJpaTest, Spring Boot test slices.', icon: Container },
+      { category: 'Contract Testing', blurb: 'Pact consumer-driven contracts, Pact Broker, can-i-deploy gate, independent deployments.', icon: FileCode2 },
+      { category: 'Chaos Engineering', blurb: 'Steady state hypothesis, Toxiproxy, AWS FIS, game days, stop conditions, resilience validation.', icon: Radar },
+    ],
+    productionNote:
+      'Based on switching to TDD which cut post-release bugs 60%, discovering circuit breaker misconfiguration during a game day, and implementing Pact can-i-deploy which prevented a schema change from breaking a dependent service in production.',
+  },
 };
 
 /** Fallback icon for categories not listed in a module's config. */

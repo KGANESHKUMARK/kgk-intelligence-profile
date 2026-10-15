@@ -1,0 +1,98 @@
+import type { InterviewQuestion } from '../../types';
+const T = 'database';
+export const databaseQuestions: InterviewQuestion[] = [
+  {
+    id: 'q-db-explain-analyze', technology: T, question: 'How do you use EXPLAIN ANALYZE to find and fix a slow PostgreSQL query?',
+    category: 'SQL Internals', difficulty: 'advanced',
+    quickAnswer: 'EXPLAIN ANALYZE runs the query and shows actual plan + timing. Read bottom-up. Seq Scan on large table = missing index. Rows actual >> estimated = stale statistics (run ANALYZE).',
+    interviewAnswer: `EXPLAIN ANALYZE executes the query and returns the actual execution plan with timing and row counts. Read the plan bottom-up — the most indented node runs first. Key signals: (1) Seq Scan on a large table — index missing or the planner chose not to use it (check why). (2) Actual rows >> estimated rows — stale statistics. Run ANALYZE table to update. (3) Sort + Seq Scan — add index to cover ORDER BY. (4) Nested Loop with large outer rows — a HashJoin might be cheaper; check join conditions. (5) High Rows Removed by Filter — the index isn't selective enough. Process: run EXPLAIN (ANALYZE, BUFFERS) — BUFFERS shows how many pages read from cache vs disk. Identify the most expensive node (highest cost). Fix: add targeted index with CONCURRENTLY. Re-run EXPLAIN ANALYZE to confirm the plan changed to Index Scan. Add pg_stat_statements to find slow queries systemically.`,
+    keyTerms: ['EXPLAIN ANALYZE', 'Seq Scan', 'Index Scan', 'row estimate', 'ANALYZE', 'BUFFERS'],
+    conceptsTested: ['Query plan reading', 'PostgreSQL internals', 'Performance optimisation'],
+    strongAnswerKeywords: ['bottom-up reading', 'Seq Scan = missing index', 'actual vs estimated rows', 'stale statistics', 'CONCURRENTLY'],
+    whatIsBeingTested: ['Practical DB performance experience'],
+    codeExample: `EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM transactions WHERE account_id='ACC-001' ORDER BY created_at;
+-- Seq Scan on transactions (rows=50000000) → add index
+CREATE INDEX CONCURRENTLY idx_tx_account_date ON transactions(account_id, created_at DESC);
+-- Re-run: Index Scan (rows=23) ✓`,
+    interviewerIntent: 'Tests whether candidate can actually debug slow queries, not just talk about indexes.',
+    followUps: ['q-db-index-design'],
+  },
+  {
+    id: 'q-db-index-design', technology: T, question: 'How do you design a composite index and when does it help vs hurt?',
+    category: 'SQL Internals', difficulty: 'advanced',
+    quickAnswer: 'Column order matters: most selective or filtered-first goes first. Composite index helps multi-column WHERE + ORDER BY. Hurts: every write, unused indexes, wrong order.',
+    interviewAnswer: `Composite index (a, b, c) supports queries filtering on: a alone, a+b, a+b+c — not b alone or c alone (leftmost prefix rule). Design: put the equality filter column first, then range/sort column. Example: WHERE account_id = ? ORDER BY created_at — index (account_id, created_at DESC) allows index seek on account_id, then index range scan in order without a sort step. Index hurt situations: (1) High-write tables — every INSERT/UPDATE/DELETE must update all indexes. (2) Low-selectivity column first — index on (status, account_id) where status has 3 values means the planner scans 33% of the index (not selective). (3) Unused indexes (check pg_stat_user_indexes). (4) Wrong column order — common mistake causing full index scans.`,
+    keyTerms: ['leftmost prefix', 'equality before range', 'selectivity', 'covering index', 'index overhead on writes'],
+    conceptsTested: ['Index design', 'Query optimiser understanding'],
+    strongAnswerKeywords: ['leftmost prefix rule', 'equality first then range', 'selectivity', 'CONCURRENTLY', 'covering index'],
+    whatIsBeingTested: ['Database design depth'],
+    interviewerIntent: 'Tests systematic index design thinking, not just knowing what an index is.',
+    followUps: ['q-db-n-plus-one'],
+  },
+  {
+    id: 'q-db-n-plus-one', technology: T, question: 'What is the N+1 problem in JPA and how do you solve it?',
+    category: 'SQL Internals', difficulty: 'intermediate',
+    quickAnswer: 'N+1: 1 query loads N entities, then N queries load their associations. Fix: @EntityGraph / JOIN FETCH for eager loading, or Hibernate batch_fetch_size for lazy.',
+    interviewAnswer: `N+1 occurs with lazy-loaded associations: load 100 orders (1 query), then access each order.getCustomer() triggers 100 individual customer queries = 101 round trips. Detection: enable Hibernate SQL logging (spring.jpa.show-sql=true) or p6spy in development. For production: Micrometer or DataSource proxy counting queries per request — alert if > 20 queries for a single endpoint. Fix 1 — @EntityGraph: @EntityGraph(attributePaths="customer") on the repository method generates a LEFT JOIN FETCH. Fix 2 — JPQL JOIN FETCH: SELECT o FROM Order o JOIN FETCH o.customer WHERE o.status = :status. Fix 3 — Hibernate batch loading: spring.jpa.properties.hibernate.default_batch_fetch_size=20 groups N lazy loads into ceil(N/20) queries with IN clause. Fix 4 — @BatchSize on the entity. Never fix with EAGER globally — causes cartesian product with collections.`,
+    keyTerms: ['N+1', 'lazy loading', 'JOIN FETCH', 'EntityGraph', 'batch fetch size', 'p6spy'],
+    conceptsTested: ['JPA/Hibernate internals', 'Performance'],
+    strongAnswerKeywords: ['p6spy detection', '@EntityGraph', 'JOIN FETCH', 'batch_fetch_size', 'not EAGER globally'],
+    whatIsBeingTested: ['JPA production experience'],
+    codeExample: `@EntityGraph(attributePaths = {"items", "items.product"})
+@Query("SELECT o FROM Order o WHERE o.status = :status")
+List<Order> findWithItems(@Param("status") String status); // 1 query, not N+1`,
+    interviewerIntent: 'N+1 is the most common JPA performance bug — any Spring Boot developer must know this.',
+    followUps: ['q-db-hikari-sizing'],
+  },
+  {
+    id: 'q-db-hikari-sizing', technology: T, question: 'How do you size a HikariCP connection pool?',
+    category: 'Connection Pooling', difficulty: 'intermediate',
+    quickAnswer: 'Formula: (CPU cores × 2) + effective_spindle_count. Start at 10. Too large = DB max_connections exhausted. Too small = pool exhaustion and queueing.',
+    interviewAnswer: `HikariCP docs (and PostgreSQL JDBC Best Practices): pool_size = (CPU_cores × 2) + spindle_count. For a 4-core EC2 → 9 connections. With 5 service instances → 45 connections total. Check PostgreSQL max_connections (default 100 — a bottleneck for many services). Signs of too small: hikaricp_connections_pending > 0 regularly (queue building). Signs of too large: DB out of connections, PostgreSQL memory exhaustion (each connection uses ~8MB). In Lambda: no HikariCP in Lambda (each invocation is ephemeral) — use RDS Proxy which pools connections outside Lambda. Key settings: connectionTimeout=3s (not 30s default — fast fail for APIs), maxLifetime=30min (recycle connections), connectionTestQuery=SELECT 1 (validate before handing out).`,
+    keyTerms: ['HikariCP', 'pool_size formula', 'max_connections', 'connectionTimeout', 'RDS Proxy', 'pool exhaustion'],
+    conceptsTested: ['Connection pooling', 'Database operations'],
+    strongAnswerKeywords: ['cores × 2 formula', 'check DB max_connections', 'connectionTimeout fast-fail', 'RDS Proxy for Lambda'],
+    whatIsBeingTested: ['Database operational knowledge'],
+    interviewerIntent: 'Practical database operations question — oversizing is a common production mistake.',
+    followUps: ['q-db-pool-exhaustion'],
+  },
+  {
+    id: 'q-db-pool-exhaustion', technology: T, question: 'What happens when a HikariCP pool is exhausted and how do you diagnose it?',
+    category: 'Connection Pooling', difficulty: 'advanced',
+    quickAnswer: 'Requests queue for connectionTimeout (30s default). Timeout → HikariException. Fix: find slow queries holding connections, reduce connectionTimeout, increase pool, or add PgBouncer.',
+    interviewAnswer: `Pool exhaustion: all maximumPoolSize connections are in use. New requests wait up to connectionTimeout for a connection. If no connection frees up in time, HikariException: "Connection is not available, request timed out after Xms". Diagnosis: (1) Micrometer: hikaricp_connections_active==maximumPoolSize, hikaricp_connections_pending > 0. (2) Thread dump: many threads blocked at HikariPool.getConnection(). (3) PostgreSQL side: SELECT * FROM pg_stat_activity — look for long-running queries or idle-in-transaction connections. Root causes: (1) Slow queries holding connections — find and fix the query. (2) Pool too small — increase up to DB max_connections limit. (3) Transactions left open — @Transactional on a method that calls an external HTTP API (connection held during HTTP call). (4) Lambda without RDS Proxy — each Lambda opens a new connection. Fix: never hold connections during external I/O; use RDS Proxy for Lambda.`,
+    keyTerms: ['pool exhaustion', 'HikariException', 'pg_stat_activity', 'idle-in-transaction', 'RDS Proxy'],
+    conceptsTested: ['Database troubleshooting', 'Production incident diagnosis'],
+    strongAnswerKeywords: ['hikaricp metrics', 'pg_stat_activity', 'slow query holding connection', 'transaction over HTTP call'],
+    whatIsBeingTested: ['Production database operations experience'],
+    interviewerIntent: 'Incident-style question — tests whether candidate has actually debugged pool exhaustion.',
+    followUps: ['q-db-redis-patterns'],
+  },
+  {
+    id: 'q-db-redis-patterns', technology: T, question: 'What Redis patterns do you use in production and what are the pitfalls?',
+    category: 'Redis', difficulty: 'advanced',
+    quickAnswer: 'Cache-aside (TTL always), rate limiting (Lua atomic), distributed lock (SETNX + TTL, prefer Redisson), pub/sub (no persistence — use Kafka for durable).',
+    interviewAnswer: `Cache-aside: read Redis; miss → read DB → write Redis with TTL. TTL always — otherwise stale data accumulates. Rate limiting: INCR key + EXPIRE, but not atomic. Use Lua script: INCR and check count in single command — if count==1, EXPIRE. Atomic prevents race where thread A does INCR, thread B does INCR, then A sets EXPIRE (B's INCR extends the window forever). Distributed lock: SET key value NX EX 30 — atomic if-not-exists with TTL. Or Redisson RLock which auto-renews the TTL while the lock is held (prevents expiry during long operations) and handles pod crashes (TTL ensures cleanup). Pub/sub: no persistence, no acknowledgement — subscriber offline during publish = missed message. Not for reliable events; use for ephemeral notifications (cache invalidation, online presence). Pitfall — cache stampede: popular key expires → all concurrent requests miss simultaneously → hammer DB. Fix: probabilistic early expiry or lock on miss.`,
+    keyTerms: ['cache-aside', 'Lua atomic', 'distributed lock', 'Redisson', 'pub/sub no persistence', 'cache stampede'],
+    conceptsTested: ['Redis patterns', 'Distributed systems'],
+    strongAnswerKeywords: ['TTL always', 'Lua atomicity', 'Redisson for lock renewal', 'pub/sub not durable', 'cache stampede'],
+    whatIsBeingTested: ['Redis production depth'],
+    codeExample: `// Atomic rate limit with Lua script (INCR + EXPIRE in one command)
+String lua = "local c=redis.call('INCR',KEYS[1]); if c==1 then redis.call('EXPIRE',KEYS[1],ARGV[1]) end; return c";
+Long count = template.execute(new DefaultRedisScript<>(lua, Long.class), List.of(key), "60");`,
+    interviewerIntent: 'Tests practical Redis usage beyond basic caching.',
+    followUps: ['q-db-cache-stampede'],
+  },
+  {
+    id: 'q-db-cache-stampede', technology: T, question: 'What is cache stampede and how do you prevent it?',
+    category: 'Redis', difficulty: 'advanced',
+    quickAnswer: 'Cache stampede: popular key expires → many concurrent requests miss → all hit DB simultaneously. Fix: probabilistic early expiry or lock-on-miss.',
+    interviewAnswer: `Cache stampede (thundering herd): a high-traffic cached key expires. All concurrent requests simultaneously get a cache miss and go to the database. For a popular key (10,000 req/s), this means 10,000 concurrent DB queries in the milliseconds before the cache is repopulated. Fixes: (1) Probabilistic early expiry: as remaining TTL decreases, increase the probability of refreshing early. Formula: if (remaining_ttl < random(0, original_ttl × β)), refresh. This distributes the refresh across a time window rather than all at the expiry instant. (2) Lock on miss: when a cache miss occurs, acquire a Redis lock. One request loads from DB and populates cache. Others wait for the lock and then read from the freshly-populated cache. (3) Background refresh: set TTL shorter than the "staleness budget". A background job refreshes before expiry. Popular key never actually expires for live traffic. (4) Persistent cache: never set TTL on the most critical keys; instead proactively invalidate on data change.`,
+    keyTerms: ['thundering herd', 'probabilistic expiry', 'lock on miss', 'background refresh'],
+    conceptsTested: ['Caching edge cases', 'Distributed systems reliability'],
+    strongAnswerKeywords: ['probabilistic early expiry', 'lock on miss', 'background refresh', 'thundering herd'],
+    whatIsBeingTested: ['Advanced caching knowledge'],
+    interviewerIntent: 'Senior-level Redis question — shows whether candidate has operated a high-traffic cache.',
+    followUps: ['q-db-explain-analyze'],
+  },
+];

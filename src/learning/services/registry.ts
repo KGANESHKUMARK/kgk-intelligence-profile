@@ -7,7 +7,8 @@
  * file directly.
  *
  * Technologies: Java, Kafka, React, Spring Boot, System Design, GenAI,
- * MLOps & AIOps, Angular, Docker & K8s, AWS, Observability.
+ * MLOps & AIOps, Angular, Docker & K8s, AWS, Observability,
+ * Security, Database Internals, CI/CD & DevOps, Java Concurrency, Testing Strategy.
  * New modules plug in here by adding imports and merging into the combined arrays below.
  */
 
@@ -56,6 +57,26 @@ import { observabilityTopics } from '../data/observability/topics';
 import { observabilityQuestions } from '../data/observability/questions';
 import { observabilityVisuals } from '../data/observability/visuals';
 import { observabilityGlossary } from '../data/observability/glossary';
+import { securityTopics } from '../data/security/topics';
+import { securityQuestions } from '../data/security/questions';
+import { securityVisuals } from '../data/security/visuals';
+import { securityGlossary } from '../data/security/glossary';
+import { databaseTopics } from '../data/database/topics';
+import { databaseQuestions } from '../data/database/questions';
+import { databaseVisuals } from '../data/database/visuals';
+import { databaseGlossary } from '../data/database/glossary';
+import { cicdTopics } from '../data/cicd/topics';
+import { cicdQuestions } from '../data/cicd/questions';
+import { cicdVisuals } from '../data/cicd/visuals';
+import { cicdGlossary } from '../data/cicd/glossary';
+import { javaConcurrencyTopics } from '../data/java-concurrency/topics';
+import { javaConcurrencyQuestions } from '../data/java-concurrency/questions';
+import { javaConcurrencyVisuals } from '../data/java-concurrency/visuals';
+import { javaConcurrencyGlossary } from '../data/java-concurrency/glossary';
+import { testingTopics } from '../data/testing/topics';
+import { testingQuestions } from '../data/testing/questions';
+import { testingVisuals } from '../data/testing/visuals';
+import { testingGlossary } from '../data/testing/glossary';
 import { ALIASES, normalizeTerm } from '../utils/normalize';
 import type { GlossaryTerm, InterviewQuestion, LearningTopic, LearningVisual } from '../types';
 
@@ -73,6 +94,11 @@ const allTopicsRaw = [
   ...dockerK8sTopics,
   ...awsTopics,
   ...observabilityTopics,
+  ...securityTopics,
+  ...databaseTopics,
+  ...cicdTopics,
+  ...javaConcurrencyTopics,
+  ...testingTopics,
 ];
 const allQuestionsRaw = [
   ...javaQuestions,
@@ -86,6 +112,11 @@ const allQuestionsRaw = [
   ...dockerK8sQuestions,
   ...awsQuestions,
   ...observabilityQuestions,
+  ...securityQuestions,
+  ...databaseQuestions,
+  ...cicdQuestions,
+  ...javaConcurrencyQuestions,
+  ...testingQuestions,
 ];
 const allVisualsRaw = [
   ...javaVisuals,
@@ -99,6 +130,11 @@ const allVisualsRaw = [
   ...dockerK8sVisuals,
   ...awsVisuals,
   ...observabilityVisuals,
+  ...securityVisuals,
+  ...databaseVisuals,
+  ...cicdVisuals,
+  ...javaConcurrencyVisuals,
+  ...testingVisuals,
 ];
 const allGlossaryRaw = [
   ...javaGlossary,
@@ -112,6 +148,11 @@ const allGlossaryRaw = [
   ...dockerK8sGlossary,
   ...awsGlossary,
   ...observabilityGlossary,
+  ...securityGlossary,
+  ...databaseGlossary,
+  ...cicdGlossary,
+  ...javaConcurrencyGlossary,
+  ...testingGlossary,
 ];
 
 const topicsById = new Map(allTopicsRaw.map((t) => [t.id, t]));
