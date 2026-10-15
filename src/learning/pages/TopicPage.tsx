@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlertTriangle, ArrowRight, Bookmark, Brain, Lightbulb, Repeat, Sparkles } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Bookmark, Brain, Lightbulb, PlayCircle, Repeat, Sparkles } from 'lucide-react';
 import { Breadcrumbs, ContextBar } from '../components/ContextBar';
 import { LearningTerm } from '../components/LearningTerm';
 import { VisualRenderer } from '../components/VisualRenderer';
@@ -13,6 +13,9 @@ import { useLearningProgress } from '../hooks/useLearningProgress';
 import { useLearningSeo } from '../hooks/useLearningSeo';
 import { cn } from '../../lib/utils';
 import { techLabel, techLanguage } from '../utils/tech';
+
+/** Topics that have animated visual walkthroughs — add IDs here when new walkthroughs are created. */
+const WALKTHROUGH_TOPICS = new Set(['rag-fundamentals']);
 
 export default function TopicPage({ technology = 'java' }: { technology?: string }) {
   const { topicId = '' } = useParams();
@@ -47,6 +50,7 @@ export default function TopicPage({ technology = 'java' }: { technology?: string
   const visuals = (topic.visualIds ?? []).map(getVisual).filter(Boolean);
   const bookmarked = isBookmarked(topic.id);
   const forReview = isReviewLater(topic.id);
+  const hasWalkthrough = WALKTHROUGH_TOPICS.has(topic.id);
 
   return (
     <article>
@@ -88,6 +92,14 @@ export default function TopicPage({ technology = 'java' }: { technology?: string
             <Repeat size={14} strokeWidth={2} aria-hidden="true" />
             {forReview ? 'Marked for review' : 'Review later'}
           </Button>
+          {hasWalkthrough && (
+            <Link to={`/learning/${tech}/walkthrough/${topic.id}`}>
+              <Button variant="primary" size="sm">
+                <PlayCircle size={14} strokeWidth={2} aria-hidden="true" />
+                Visual Walkthrough
+              </Button>
+            </Link>
+          )}
         </div>
       </header>
 

@@ -21,12 +21,13 @@ const VersionsPage = lazy(() => import('./pages/VersionsPage'));
 const VersionDetail = lazy(() => import('./pages/VersionDetail'));
 const LatestJava = lazy(() => import('./pages/LatestJava'));
 const TechHome = lazy(() => import('./pages/TechHome'));
+const VisualWalkthrough = lazy(() => import('./pages/VisualWalkthrough'));
 
 /**
  * Generic module routes (Spring Boot, System Design, GenAI, MLOps, Angular…)
  * resolve the module from the URL. Unknown modules fall back to the hub.
  */
-type GenericPage = 'home' | 'topic' | 'category' | 'interview' | 'flashcards' | 'glossary';
+type GenericPage = 'home' | 'topic' | 'category' | 'interview' | 'flashcards' | 'glossary' | 'walkthrough';
 
 function GenericTrackRoute({ page }: { page: GenericPage }) {
   const { tech = '' } = useParams();
@@ -44,6 +45,8 @@ function GenericTrackRoute({ page }: { page: GenericPage }) {
       return <Flashcards key={tech} technology={tech} />;
     case 'glossary':
       return <GlossaryPage key={tech} technology={tech} />;
+    case 'walkthrough':
+      return <VisualWalkthrough />;
   }
 }
 
@@ -97,6 +100,7 @@ export default function LearningApp() {
           <Route path=":tech/interview" element={<GenericTrackRoute page="interview" />} />
           <Route path=":tech/flashcards" element={<GenericTrackRoute page="flashcards" />} />
           <Route path=":tech/glossary" element={<GenericTrackRoute page="glossary" />} />
+          <Route path=":tech/walkthrough/:topicId" element={<GenericTrackRoute page="walkthrough" />} />
 
           {/* Unknown learning routes fall back to the hub rather than a dead end. */}
           <Route path="*" element={<Navigate to="/learning" replace />} />
