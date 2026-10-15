@@ -25,6 +25,8 @@ const CATEGORY_CARDS: { category: string; blurb: string; icon: React.ReactNode }
   { category: 'State Management', blurb: 'Local vs client vs server state, Redux Toolkit, TanStack Query.', icon: <Layers size={16} strokeWidth={1.75} /> },
   { category: 'TypeScript', blurb: 'Typed props and events, generics, discriminated unions, reusable typed APIs.', icon: <ShieldCheck size={16} strokeWidth={1.75} /> },
   { category: 'Architecture', blurb: 'Error boundaries, testing, Next.js rendering, RBAC security, system design.', icon: <Layers size={16} strokeWidth={1.75} /> },
+  { category: 'React 19', blurb: 'Actions, useActionState, use() hook, React Compiler auto-memoization, useOptimistic.', icon: <Repeat size={16} strokeWidth={1.75} /> },
+  { category: 'Ecosystem & Libraries', blurb: 'Redux Toolkit deep-dive, Axios interceptors, React Router v6/v7, React Hook Form + Zod, advanced patterns.', icon: <Database size={16} strokeWidth={1.75} /> },
 ];
 
 const reactTopicsAll = topicsByTechnology('react');

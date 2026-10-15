@@ -15,7 +15,13 @@ import { cn } from '../../lib/utils';
 import { techLabel, techLanguage } from '../utils/tech';
 
 /** Topics that have animated visual walkthroughs — add IDs here when new walkthroughs are created. */
-const WALKTHROUGH_TOPICS = new Set(['rag-fundamentals']);
+const WALKTHROUGH_TOPICS = new Set([
+  'rag-fundamentals',
+  'react-useeffect',
+  'react-redux-deep',
+  'react-reconciliation',
+  'react-axios-http',
+]);
 
 export default function TopicPage({ technology = 'java' }: { technology?: string }) {
   const { topicId = '' } = useParams();
