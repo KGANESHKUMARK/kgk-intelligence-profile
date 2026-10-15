@@ -276,4 +276,94 @@ export const reactGlossary: GlossaryTerm[] = [
     technology: 'react', category: 'React 19',
     example: 'startTransition(() => setFilter(value)); — table re-render is interruptible; typing input stays responsive.',
   },
+
+  /* ─── Real-time & Streaming ─── */
+  {
+    id: 'react-glossary-websocket',
+    term: 'WebSocket',
+    definition: 'Full-duplex TCP connection between browser and server. Both sides can send messages at any time. Used for live prices, notifications, chat. Requires manual reconnection logic.',
+    technology: 'react', category: 'Real-time & Streaming',
+    example: 'const ws = new WebSocket("wss://api.bank.com/prices"); ws.onmessage = (e) => handlePrice(JSON.parse(e.data));',
+  },
+  {
+    id: 'react-glossary-sse',
+    term: 'Server-Sent Events (SSE)',
+    definition: 'One-way server→client push over HTTP. EventSource auto-reconnects with Last-Event-ID. Simpler than WebSocket for receive-only use cases.',
+    technology: 'react', category: 'Real-time & Streaming',
+    example: 'const es = new EventSource("/api/notifications"); es.onmessage = (e) => showNotification(e.data);',
+  },
+  {
+    id: 'react-glossary-intersectionobserver',
+    term: 'IntersectionObserver',
+    definition: 'Browser API that fires a callback when an element enters/exits the viewport. Used for infinite scroll (trigger fetchNextPage when sentinel is visible) and lazy loading images.',
+    technology: 'react', category: 'Real-time & Streaming',
+    example: 'new IntersectionObserver(([entry]) => { if (entry.isIntersecting) fetchNextPage(); }, { rootMargin: "200px" });',
+  },
+  {
+    id: 'react-glossary-tus',
+    term: 'tus protocol',
+    definition: 'Open protocol for resumable file uploads. tus-js-client handles chunking, resume, retry, and progress. The standard for production file uploads over 50MB.',
+    technology: 'react', category: 'Real-time & Streaming',
+    example: 'const upload = new tus.Upload(file, { endpoint: "/upload", retryDelays: [0, 1000, 3000] }); upload.start();',
+  },
+
+  /* ─── Internals & Build ─── */
+  {
+    id: 'react-glossary-treeshaking',
+    term: 'Tree Shaking',
+    definition: 'Bundler optimization that removes unused exports from the final bundle. Only works with ESM (import/export), NOT CommonJS (require).',
+    technology: 'react', category: 'Internals & Build',
+    example: 'import { debounce } from "lodash-es"; — only debounce is included. import _ from "lodash"; — entire 70KB library included.',
+  },
+  {
+    id: 'react-glossary-httponly',
+    term: 'httpOnly Cookie',
+    definition: 'A cookie attribute that makes the cookie invisible to JavaScript (document.cookie). XSS attacks cannot steal httpOnly cookies. The only safe storage for auth tokens in banking apps.',
+    technology: 'react', category: 'Internals & Build',
+    example: 'Set-Cookie: token=abc; HttpOnly; Secure; SameSite=Strict; Path=/api',
+  },
+  {
+    id: 'react-glossary-cwv',
+    term: 'Core Web Vitals',
+    definition: 'Google\'s three UX metrics: LCP (Largest Contentful Paint < 2.5s), FID/INP (input delay < 100ms), CLS (layout shift < 0.1). Measured in Chrome User Experience Report.',
+    technology: 'react', category: 'Internals & Build',
+    example: 'import { onLCP, onFID, onCLS } from "web-vitals"; onLCP(metric => analytics.send("LCP", metric.value));',
+  },
+  {
+    id: 'react-glossary-sourcemap',
+    term: 'Source Map',
+    definition: 'A .map file that maps minified/compiled code back to the original source. Enables debugging production errors with readable stack traces.',
+    technology: 'react', category: 'Internals & Build',
+    example: 'build.sourcemap: true in vite.config.ts → generates .js.map files alongside minified JS.',
+  },
+
+  /* ─── Testing ─── */
+  {
+    id: 'react-glossary-msw',
+    term: 'MSW (Mock Service Worker)',
+    definition: 'Library that intercepts fetch/XHR at the Service Worker level. More realistic than jest.mock — components make real network calls, MSW responds with mock data.',
+    technology: 'react', category: 'Testing',
+    example: 'server.use(rest.get("/api/accounts", (req, res, ctx) => res(ctx.json(mockAccounts))));',
+  },
+  {
+    id: 'react-glossary-playwright',
+    term: 'Playwright',
+    definition: 'Microsoft\'s E2E testing framework. Multi-browser (Chromium, Firefox, WebKit), auto-wait, network interception, tracing with video/screenshots on failure. Modern replacement for Selenium.',
+    technology: 'react', category: 'Testing',
+    example: 'await page.getByRole("button", { name: "Submit" }).click(); await expect(page.getByText("Success")).toBeVisible();',
+  },
+  {
+    id: 'react-glossary-userevent',
+    term: 'userEvent (Testing Library)',
+    definition: 'Simulates real user interactions: click (mousedown+mouseup+click), type (focus+keydown+input+keyup for each character). More realistic than fireEvent.',
+    technology: 'react', category: 'Testing',
+    example: 'const user = userEvent.setup(); await user.type(screen.getByLabelText("Email"), "user@bank.com");',
+  },
+  {
+    id: 'react-glossary-mutation-testing',
+    term: 'Mutation Testing',
+    definition: 'Modifies your code (e.g., changes === to !==) and checks if your tests catch the mutation. Measures test quality, not just code coverage. Tool: Stryker.',
+    technology: 'react', category: 'Testing',
+    example: 'Stryker changes "if (amount > 0)" to "if (amount >= 0)" — if no test fails, the test suite is weak for that boundary.',
+  },
 ];

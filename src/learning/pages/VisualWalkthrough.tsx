@@ -656,6 +656,480 @@ function AccountList() {
   },
 ];
 
+/* ─────────────────── WebSocket Connection Lifecycle ─────────────────────── */
+
+const websocketLifecycleSteps: PipelineStep[] = [
+  {
+    id: 'ws-handshake',
+    label: 'HTTP Upgrade Handshake',
+    icon: '🤝',
+    description: 'Client sends an HTTP request with Upgrade: websocket header. Server responds with 101 Switching Protocols. The connection is now bidirectional.',
+    detail:
+      'The WebSocket handshake starts as a normal HTTP GET request with headers: Connection: Upgrade, Upgrade: websocket, Sec-WebSocket-Key (random base64). The server validates the key, responds with 101 and Sec-WebSocket-Accept (hashed key). After this, the TCP connection switches from HTTP to WebSocket protocol — both sides can now send frames at any time without request/response overhead.',
+    codeSnippet: `// Client initiates WebSocket connection
+const ws = new WebSocket('wss://api.bank.com/prices');
+
+// Under the hood, the browser sends:
+// GET /prices HTTP/1.1
+// Host: api.bank.com
+// Upgrade: websocket
+// Connection: Upgrade
+// Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+// Sec-WebSocket-Version: 13
+
+// Server responds:
+// HTTP/1.1 101 Switching Protocols
+// Upgrade: websocket
+// Connection: Upgrade
+// Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=`,
+    highlight: 'The handshake is HTTP — after 101, the connection is pure WebSocket. This is why WebSocket URLs use wss:// (secure) like HTTPS uses https://.',
+    color: 'blue',
+  },
+  {
+    id: 'ws-open',
+    label: 'Connection Open',
+    icon: '✅',
+    description: 'WebSocket is connected. ws.onopen fires. Reset the reconnection backoff counter. Flush any queued messages.',
+    detail:
+      'In React, ws.onopen is handled inside a useEffect. On open: (1) set status to "open", (2) reset the retry counter to 0 (backoff resets), (3) flush any messages that were queued while disconnected. The WebSocket instance is stored in a useRef — stable across renders, doesn\'t trigger re-renders on assignment.',
+    codeSnippet: `ws.onopen = () => {
+  setStatus('open');
+  retryRef.current = 0;  // reset exponential backoff
+
+  // Flush queued messages (buffered while disconnected)
+  while (queueRef.current.length > 0) {
+    ws.send(queueRef.current.shift()!);
+  }
+
+  // Subscribe to channels
+  ws.send(JSON.stringify({ type: 'subscribe', channels: ['prices', 'alerts'] }));
+};`,
+    highlight: 'Store the WebSocket in useRef — not useState. useState would cause a re-render every time the socket instance changes (reconnection), useRef doesn\'t.',
+    color: 'green',
+  },
+  {
+    id: 'ws-message',
+    label: 'Messages Flow',
+    icon: '📨',
+    description: 'Both client and server can send messages at any time. onmessage receives data. Parse JSON, update React state or TanStack Query cache.',
+    detail:
+      'Messages arrive as MessageEvent with a data property. For JSON data: JSON.parse(event.data). For binary data: event.data is an ArrayBuffer. In banking: price updates arrive as { type: "price", symbol: "AAPL", price: 182.50, timestamp: 1719000000 }. Best practice: update TanStack Query cache directly with queryClient.setQueryData — the component re-renders automatically, and the data is cached/invalidated by TanStack Query\'s rules.',
+    codeSnippet: `ws.onmessage = (event: MessageEvent) => {
+  const msg = JSON.parse(event.data);
+
+  switch (msg.type) {
+    case 'price_update':
+      // Update TanStack Query cache — triggers component re-render
+      queryClient.setQueryData(
+        ['price', msg.symbol],
+        (old: Price) => ({ ...old, price: msg.price, updatedAt: msg.timestamp })
+      );
+      break;
+
+    case 'notification':
+      // Show toast notification
+      toast.info(msg.message);
+      break;
+
+    case 'balance_update':
+      // Invalidate balance query — triggers refetch
+      queryClient.invalidateQueries({ queryKey: ['balance', msg.accountId] });
+      break;
+  }
+};`,
+    highlight: 'Integrate WebSocket with TanStack Query: WebSocket pushes data → setQueryData updates the cache → components re-render automatically. Best of both worlds: real-time + caching.',
+    color: 'purple',
+  },
+  {
+    id: 'ws-heartbeat',
+    label: 'Heartbeat / Keep-Alive',
+    icon: '💓',
+    description: 'Send a ping every 30s to keep the connection alive. If no pong within 5s, the connection is dead — close and reconnect.',
+    detail:
+      'Load balancers and proxies (Nginx, CloudFront, API Gateway) close idle connections after 30-60 seconds. A heartbeat ping prevents this. Implementation: setInterval sends a "ping" message. If the server doesn\'t respond with "pong" within 5 seconds, the connection is dead (zombie connection) — close it and trigger reconnection. Some WebSocket servers handle ping/pong at the protocol level (binary ping frames).',
+    codeSnippet: `// Heartbeat: detect zombie connections
+const HEARTBEAT_INTERVAL = 30_000;  // 30 seconds
+const PONG_TIMEOUT = 5_000;  // 5 seconds to respond
+
+let pongTimer: NodeJS.Timeout;
+const heartbeat = setInterval(() => {
+  if (ws.readyState !== WebSocket.OPEN) return;
+
+  ws.send(JSON.stringify({ type: 'ping' }));
+
+  // If no pong in 5s, connection is dead
+  pongTimer = setTimeout(() => {
+    console.warn('WebSocket: no pong received, reconnecting...');
+    ws.close();  // triggers onclose → reconnect
+  }, PONG_TIMEOUT);
+}, HEARTBEAT_INTERVAL);
+
+// Clear pong timer when we receive the pong
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  if (msg.type === 'pong') {
+    clearTimeout(pongTimer);
+    return;
+  }
+  // ... handle other messages
+};`,
+    highlight: 'Without a heartbeat, a "zombie" connection stays open for minutes — the client thinks it\'s connected, but no messages arrive. Heartbeat detects this and forces reconnection.',
+    color: 'orange',
+  },
+  {
+    id: 'ws-reconnect',
+    label: 'Disconnect → Reconnect',
+    icon: '🔄',
+    description: 'Connection drops (network switch, server restart). Exponential backoff: wait 1s, 2s, 4s, 8s... max 30s before reconnecting.',
+    detail:
+      'ws.onclose fires when the connection drops. DO NOT immediately reconnect — if the server is down, you\'ll hammer it with requests. Exponential backoff: delay = min(1000 * 2^retry, 30000). First attempt: 1s. Second: 2s. Third: 4s. After 5 attempts: 30s. On successful reconnect (onopen), reset the counter. Also queue any messages the user sends while disconnected — flush the queue on reconnect.',
+    codeSnippet: `ws.onclose = (event) => {
+  setStatus('closed');
+  clearInterval(heartbeat);  // stop pinging
+
+  if (event.code === 1000) return;  // intentional close — don't reconnect
+
+  // Exponential backoff
+  const delay = Math.min(1000 * Math.pow(2, retryRef.current), 30_000);
+  retryRef.current++;
+
+  console.log(\`WebSocket: reconnecting in \${delay / 1000}s (attempt \${retryRef.current})\`);
+
+  setTimeout(() => {
+    if (mounted) connect();  // reconnect (check component still mounted)
+  }, delay);
+};
+
+// Cleanup on unmount — intentional close (code 1000)
+return () => {
+  mounted = false;
+  ws.close(1000, 'Component unmounted');
+};`,
+    highlight: 'Exponential backoff prevents thundering herd — if 1000 clients disconnect during a server restart, they reconnect at staggered intervals instead of all at once.',
+    color: 'red',
+  },
+];
+
+/* ─────────────────── File Upload Chunking Pipeline ─────────────────────── */
+
+const fileUploadSteps: PipelineStep[] = [
+  {
+    id: 'fu-select',
+    label: 'File Selection & Validation',
+    icon: '📁',
+    description: 'User selects a file via <input type="file"> or drag-and-drop. Validate file type, size, and naming before starting upload.',
+    detail:
+      'Client-side validation: check file.type (MIME), file.size (reject >5GB), file.name (sanitize special characters). For banking: validate file extension (only .csv, .xlsx, .pdf for batch payments). Show file metadata: name, size, type. For drag-and-drop: use onDragOver, onDrop events. For multiple files: input.multiple attribute.',
+    codeSnippet: `function FileDropZone({ onFile }: { onFile: (f: File) => void }) {
+  const [dragActive, setDragActive] = useState(false);
+
+  const validate = (file: File) => {
+    const MAX = 5 * 1024 ** 3;  // 5GB
+    const ALLOWED = ['text/csv', 'application/pdf', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    if (file.size > MAX) return 'File too large (max 5GB)';
+    if (!ALLOWED.includes(file.type)) return 'Invalid file type';
+    return null;
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files[0];
+    const error = validate(file);
+    if (error) { toast.error(error); return; }
+    onFile(file);
+  };
+
+  return (
+    <div
+      onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+      onDragLeave={() => setDragActive(false)}
+      onDrop={handleDrop}
+      className={dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
+    >
+      <p>Drop file here or <label>browse<input type="file" hidden onChange={e => onFile(e.target.files![0])} /></label></p>
+    </div>
+  );
+}`,
+    highlight: 'Always validate on the client (fast UX feedback) AND on the server (security). Never trust client-side validation alone.',
+    color: 'blue',
+  },
+  {
+    id: 'fu-chunk',
+    label: 'Chunk the File',
+    icon: '✂️',
+    description: 'file.slice(start, end) splits the File into 5MB chunks. Each chunk gets an index. A session ID ties all chunks together.',
+    detail:
+      'File.slice() returns a Blob — a lightweight reference to a portion of the file data (NOT a copy in memory). For a 2GB file with 5MB chunks: 400 chunks. Create a session ID (UUID) so the server knows which chunks belong together. Track chunk status: pending, uploading, complete, failed.',
+    codeSnippet: `const CHUNK_SIZE = 5 * 1024 * 1024;  // 5MB
+
+function createChunks(file: File) {
+  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+  const sessionId = crypto.randomUUID();
+  const chunks: ChunkInfo[] = [];
+
+  for (let i = 0; i < totalChunks; i++) {
+    const start = i * CHUNK_SIZE;
+    const end = Math.min(start + CHUNK_SIZE, file.size);
+    chunks.push({
+      index: i,
+      blob: file.slice(start, end),  // Blob reference — NOT a memory copy
+      size: end - start,
+      status: 'pending',
+    });
+  }
+
+  return { sessionId, totalChunks, chunks, fileName: file.name };
+}`,
+    highlight: 'file.slice() creates a Blob reference — NOT a copy. Even slicing a 5GB file into 1000 chunks uses negligible memory. The actual data is read only when uploaded.',
+    color: 'purple',
+  },
+  {
+    id: 'fu-upload',
+    label: 'Parallel Upload with Progress',
+    icon: '🚀',
+    description: 'Upload 3-5 chunks concurrently using a promise pool. Track progress per-chunk and aggregate into overall percentage.',
+    detail:
+      'Upload chunks in parallel (3-5 concurrent) for speed. Use a promise pool: start N uploads, when one finishes, start the next pending chunk. Track progress per-chunk via XMLHttpRequest.upload.onprogress or Axios onUploadProgress. Aggregate: (completedChunks + currentChunkProgress) / totalChunks * 100. Show: overall progress bar, estimated time remaining (bytes remaining / current speed), chunk-level status.',
+    codeSnippet: `async function uploadChunks(
+  chunks: ChunkInfo[], sessionId: string, onProgress: (pct: number) => void
+) {
+  const CONCURRENCY = 4;
+  let completed = 0;
+  const chunkProgress = new Array(chunks.length).fill(0);
+
+  const pool = chunks.map((chunk, i) => async () => {
+    if (chunk.status === 'complete') { completed++; return; }
+    const form = new FormData();
+    form.append('chunk', chunk.blob);
+    form.append('index', String(i));
+    form.append('session', sessionId);
+
+    await api.post('/upload/chunk', form, {
+      onUploadProgress: (e) => {
+        chunkProgress[i] = e.loaded / e.total!;
+        const total = chunkProgress.reduce((s, p) => s + p, 0) / chunks.length;
+        onProgress(total * 100);
+      },
+    });
+    chunk.status = 'complete';
+    completed++;
+  });
+
+  // Promise pool: run N at a time
+  const executing = new Set<Promise<void>>();
+  for (const task of pool) {
+    const p = task().then(() => executing.delete(p));
+    executing.add(p);
+    if (executing.size >= CONCURRENCY) await Promise.race(executing);
+  }
+  await Promise.all(executing);
+}`,
+    highlight: 'Promise pool limits concurrency to 3-5 — prevents flooding the server with 400 simultaneous requests. Each finished chunk starts the next pending one.',
+    color: 'green',
+  },
+  {
+    id: 'fu-resume',
+    label: 'Resume on Failure',
+    icon: '🔁',
+    description: 'On failure or page reload, ask the server which chunks it has. Skip them. Upload only the missing chunks.',
+    detail:
+      'Resume flow: (1) GET /upload/status?session=abc → server returns { completedChunks: [0, 1, 2, 5, 6] }. (2) Mark those chunks as "complete" in the client. (3) Upload only the missing chunks (3, 4, 7, 8...). This is why each chunk has a session ID and index. For page reload: store the session ID in sessionStorage — on mount, check if there\'s an active session and resume. The tus protocol standardizes this entire flow.',
+    codeSnippet: `async function resumeUpload(sessionId: string, file: File) {
+  // Ask server which chunks are already uploaded
+  const { data } = await api.get(\`/upload/status?session=\${sessionId}\`);
+  const completedSet = new Set<number>(data.completedChunks);
+
+  const { chunks } = createChunks(file);
+
+  // Mark already-uploaded chunks
+  chunks.forEach((chunk, i) => {
+    if (completedSet.has(i)) chunk.status = 'complete';
+  });
+
+  const remaining = chunks.filter(c => c.status !== 'complete');
+  console.log(\`Resuming: \${remaining.length} of \${chunks.length} chunks remaining\`);
+
+  // Upload only the missing chunks
+  await uploadChunks(chunks, sessionId, setProgress);
+}
+
+// Persist session ID for page-reload resume
+sessionStorage.setItem('upload_session', JSON.stringify({ sessionId, fileName }));`,
+    highlight: 'tus protocol (tus.io) is the open standard for resumable uploads. tus-js-client handles resume, retry, and progress out of the box — use it in production instead of building from scratch.',
+    color: 'orange',
+  },
+  {
+    id: 'fu-assemble',
+    label: 'Server Assembly & Verification',
+    icon: '🔧',
+    description: 'After all chunks are uploaded, tell the server to assemble them into the final file. Verify integrity with checksums.',
+    detail:
+      'Client sends POST /upload/complete with the session ID, file name, total chunks, and SHA-256 hash of the original file. Server: (1) verifies all chunk indices are present, (2) concatenates chunks in order, (3) computes SHA-256 of the assembled file, (4) compares with the client hash — if mismatch, reject. (5) Moves the file to permanent storage. The hash computation on the client should happen in a Web Worker to avoid blocking the UI.',
+    codeSnippet: `// Client: compute file hash in a Web Worker
+const hashWorker = new Worker('/hash-worker.js');
+
+hashWorker.postMessage({ file });
+hashWorker.onmessage = async (e) => {
+  const fileHash = e.data.hash;
+
+  // Tell server to assemble
+  await api.post('/upload/complete', {
+    sessionId,
+    fileName: file.name,
+    totalChunks: chunks.length,
+    fileSize: file.size,
+    sha256: fileHash,  // integrity verification
+  });
+
+  toast.success('Upload complete!');
+  sessionStorage.removeItem('upload_session');  // cleanup
+};
+
+// hash-worker.js (Web Worker — runs off main thread)
+self.onmessage = async (e) => {
+  const buffer = await e.data.file.arrayBuffer();
+  const hash = await crypto.subtle.digest('SHA-256', buffer);
+  const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  self.postMessage({ hash: hex });
+};`,
+    highlight: 'Web Worker for hashing — computing SHA-256 of a 5GB file takes seconds and would freeze the UI if done on the main thread. Always offload CPU-intensive work to a worker.',
+    color: 'red',
+  },
+];
+
+/* ────────────────── React Testing Pyramid ──────────────────────────────── */
+
+const testingPyramidSteps: PipelineStep[] = [
+  {
+    id: 'tp-unit',
+    label: 'Unit Tests (70%)',
+    icon: '🧪',
+    description: 'Test individual components with React Testing Library. Query by role, interact with userEvent, assert visible output. Fast, isolated, high coverage.',
+    detail:
+      'Unit/component tests are the foundation: fast (milliseconds), reliable (no external dependencies), high coverage. Use React Testing Library + Vitest/Jest. Test behavior, not implementation: render the component, find elements by accessible role/label, simulate user interactions (click, type, select), assert on visible output. Mock API calls with MSW (Mock Service Worker) — intercepts at the network level for realistic mocking. Run on every PR commit (fast gate).',
+    codeSnippet: `import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { server } from './mocks/server';  // MSW
+import { rest } from 'msw';
+
+test('shows error for invalid transfer amount', async () => {
+  const user = userEvent.setup();
+  render(<TransferForm />);
+
+  await user.type(screen.getByLabelText('Amount'), '-500');
+  await user.click(screen.getByRole('button', { name: 'Submit' }));
+
+  expect(screen.getByText('Amount must be positive')).toBeInTheDocument();
+});
+
+test('submits transfer successfully', async () => {
+  server.use(rest.post('/api/transfers', (req, res, ctx) => res(ctx.json({ success: true }))));
+  const user = userEvent.setup();
+  render(<TransferForm />);
+
+  await user.type(screen.getByLabelText('Amount'), '1000');
+  await user.click(screen.getByRole('button', { name: 'Submit' }));
+
+  await screen.findByText('Transfer successful');
+});`,
+    highlight: 'Query by role (getByRole), not by test-id. This ensures your tests validate accessibility AND behavior at the same time.',
+    color: 'green',
+  },
+  {
+    id: 'tp-integration',
+    label: 'Integration Tests (20%)',
+    icon: '🔗',
+    description: 'Test multiple components working together: form → API → state update → UI change. Verify contracts between frontend and backend.',
+    detail:
+      'Integration tests verify that components compose correctly: a form submission updates the table, a mutation invalidates the cache, a route guard redirects unauthenticated users. Test with MSW intercepting real API calls (not jest.mock). TanStack Query tests: verify query keys, cache invalidation after mutations, retry behavior. Redux tests: dispatch action → assert state. API contract tests: verify the frontend sends the right payload shape and handles the response shape correctly.',
+    codeSnippet: `test('transfer flow: form → API → balance update', async () => {
+  const user = userEvent.setup();
+  render(
+    <QueryClientProvider client={queryClient}>
+      <TransferPage />
+    </QueryClientProvider>
+  );
+
+  // Verify initial balance
+  expect(await screen.findByText('Balance: $10,000')).toBeInTheDocument();
+
+  // Submit transfer
+  await user.type(screen.getByLabelText('Amount'), '500');
+  await user.click(screen.getByRole('button', { name: 'Transfer' }));
+
+  // Verify balance updated (cache invalidated, refetched)
+  await waitFor(() => {
+    expect(screen.getByText('Balance: $9,500')).toBeInTheDocument();
+  });
+});`,
+    highlight: 'Integration tests with MSW are worth 10 isolated unit tests. They catch real bugs: "mutation succeeded but forgot to invalidate the balance query."',
+    color: 'blue',
+  },
+  {
+    id: 'tp-e2e',
+    label: 'E2E Tests (10%)',
+    icon: '🌐',
+    description: 'Full browser tests with Playwright/Cypress — test critical user journeys end-to-end: login → transfer → confirm → logout.',
+    detail:
+      'E2E tests run in a real browser against the full application. Only test CRITICAL paths: login flow, payment flow, RBAC (admin sees admin panel, user doesn\'t). Playwright: multi-browser (Chromium, Firefox, WebKit), auto-wait (no sleep()), network interception, tracing (video + screenshots on failure). Run nightly or on merge to main (too slow for every PR). Page Object Model: encapsulate page interactions in classes for DRY tests.',
+    codeSnippet: `// Playwright — critical banking journey
+test('complete payment flow', async ({ page }) => {
+  // Login
+  await page.goto('/login');
+  await page.getByLabel('Email').fill('user@bank.com');
+  await page.getByLabel('Password').fill('password');
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  // Navigate to transfers
+  await page.getByRole('link', { name: 'Transfers' }).click();
+
+  // Fill and submit transfer
+  await page.getByLabel('To Account').fill('9876543210');
+  await page.getByLabel('Amount').fill('1000');
+  await page.getByRole('button', { name: 'Review' }).click();
+  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  // Verify success
+  await expect(page.getByText('Transfer successful')).toBeVisible();
+});`,
+    highlight: 'E2E tests are slow and potentially flaky — only test the happy path of CRITICAL journeys. Everything else should be covered by faster unit/integration tests.',
+    color: 'purple',
+  },
+  {
+    id: 'tp-coverage',
+    label: 'Coverage & CI Gate',
+    icon: '📊',
+    description: 'Collect coverage reports. Set thresholds: 80% overall, 95% on payment flows. CI fails if coverage drops. Mutation testing for quality.',
+    detail:
+      'Coverage types: line (was this line executed?), branch (were both if/else paths taken?), function (was this function called?), statement. Tools: Istanbul (istanbul/nyc) or V8 (built into Vitest). CI integration: fail the build if coverage drops below threshold. Coverage doesn\'t measure test QUALITY — a test that calls a function without assertions has 100% coverage but catches nothing. Mutation testing (Stryker) modifies your code (changes === to !==) and verifies your tests catch the mutation — measures test effectiveness, not just execution.',
+    codeSnippet: `// vitest.config.ts — coverage configuration
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],  // lcov for CI tools (SonarQube)
+      thresholds: {
+        lines: 80,
+        branches: 75,
+        functions: 80,
+        statements: 80,
+      },
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.*', 'src/**/*.stories.*'],
+    },
+  },
+});
+
+// package.json scripts
+"test": "vitest",
+"test:coverage": "vitest --coverage",
+"test:ci": "vitest --coverage --reporter=junit"`,
+    highlight: 'Coverage = "was this code executed?" Mutation testing = "do your tests actually catch bugs?" Both are needed. Aim for 80% coverage + mutation score >60%.',
+    color: 'orange',
+  },
+];
+
 const WALKTHROUGHS: Record<string, { title: string; subtitle: string; sections: { title: string; steps: PipelineStep[] }[] }> = {
   'rag-fundamentals': {
     title: 'RAG Pipeline — Visual Walkthrough',
@@ -691,6 +1165,27 @@ const WALKTHROUGHS: Record<string, { title: string; subtitle: string; sections: 
     subtitle: 'How every HTTP request flows through interceptors: JWT injection, error handling, token refresh',
     sections: [
       { title: 'Axios Request → Response Pipeline', steps: axiosInterceptorSteps },
+    ],
+  },
+  'react-websocket': {
+    title: 'WebSocket Connection Lifecycle — Visual Walkthrough',
+    subtitle: 'Handshake → messages → heartbeat → reconnection — the complete WebSocket lifecycle in React',
+    sections: [
+      { title: 'WebSocket Lifecycle', steps: websocketLifecycleSteps },
+    ],
+  },
+  'react-file-upload': {
+    title: 'Chunked File Upload Pipeline — Visual Walkthrough',
+    subtitle: 'How to upload GB-sized files: chunk → parallel upload → resume → verify — with progress tracking',
+    sections: [
+      { title: 'Chunked Resumable Upload', steps: fileUploadSteps },
+    ],
+  },
+  'react-testing-unit': {
+    title: 'React Testing Pyramid — Visual Walkthrough',
+    subtitle: 'Unit → Integration → E2E → Coverage: the complete testing strategy with banking examples',
+    sections: [
+      { title: 'The Testing Pyramid', steps: testingPyramidSteps },
     ],
   },
 };

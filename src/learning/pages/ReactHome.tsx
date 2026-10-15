@@ -27,6 +27,9 @@ const CATEGORY_CARDS: { category: string; blurb: string; icon: React.ReactNode }
   { category: 'Architecture', blurb: 'Error boundaries, testing, Next.js rendering, RBAC security, system design.', icon: <Layers size={16} strokeWidth={1.75} /> },
   { category: 'React 19', blurb: 'Actions, useActionState, use() hook, React Compiler auto-memoization, useOptimistic.', icon: <Repeat size={16} strokeWidth={1.75} /> },
   { category: 'Ecosystem & Libraries', blurb: 'Redux Toolkit deep-dive, Axios interceptors, React Router v6/v7, React Hook Form + Zod, advanced patterns.', icon: <Database size={16} strokeWidth={1.75} /> },
+  { category: 'Real-time & Streaming', blurb: 'WebSocket, SSE, infinite scroll, virtual lists, chunked file upload/download, resumable uploads.', icon: <Repeat size={16} strokeWidth={1.75} /> },
+  { category: 'Internals & Build', blurb: 'Babel/SWC compilation, tree shaking, CDN caching, Core Web Vitals, httpOnly cookies, localStorage security.', icon: <Zap size={16} strokeWidth={1.75} /> },
+  { category: 'Testing', blurb: 'React Testing Library, Jest/Vitest, coverage, E2E with Playwright/Cypress/TestCafe, autocomplete & async validation.', icon: <ShieldCheck size={16} strokeWidth={1.75} /> },
 ];
 
 const reactTopicsAll = topicsByTechnology('react');

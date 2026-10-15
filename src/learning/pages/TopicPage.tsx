@@ -21,6 +21,9 @@ const WALKTHROUGH_TOPICS = new Set([
   'react-redux-deep',
   'react-reconciliation',
   'react-axios-http',
+  'react-websocket',
+  'react-file-upload',
+  'react-testing-unit',
 ]);
 
 export default function TopicPage({ technology = 'java' }: { technology?: string }) {
