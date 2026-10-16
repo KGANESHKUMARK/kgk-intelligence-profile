@@ -9,12 +9,19 @@ const TECHNOLOGIES = [
   { id: 'spring-boot', name: 'Spring Boot & Microservices', blurb: 'DI, auto-config, transactions, Spring Cloud Gateway, resilience, security, Maven.', available: true },
   { id: 'system-design', name: 'System Design', blurb: 'Scalability, caching, sharding, API Gateway, REST API design, case studies.', available: true },
   { id: 'kafka', name: 'Kafka', blurb: 'Topics, partitions, consumer groups, delivery semantics, Avro, Streams.', available: true },
-  { id: 'react', name: 'React', blurb: 'Rendering model, hooks, performance, server state, TypeScript, architecture.', available: true },
+  { id: 'react', name: 'React', blurb: 'Rendering model, hooks, performance, real-time data, testing, TypeScript, architecture.', available: true },
   { id: 'angular', name: 'Angular', blurb: 'DI, RxJS, change detection and signals, reactive forms, routing, NgRx.', available: true },
+  { id: 'python', name: 'Python', blurb: 'Collections, strings, DSA patterns, generators, decorators, OOP, concurrency, FastAPI, pytest.', available: true },
   { id: 'genai', name: 'GenAI', blurb: 'LLMs, RAG, prompt and context engineering, guardrails, LLMOps.', available: true },
   { id: 'mlops', name: 'MLOps & AIOps', blurb: 'ML pipelines, model registry, drift monitoring, anomaly detection, auto-remediation.', available: true },
-  { id: 'python', name: 'Python', blurb: 'Language model, data tooling, async.', available: false },
-  { id: 'kubernetes', name: 'Kubernetes', blurb: 'Workloads, scheduling, networking, operations.', available: false },
+  { id: 'docker-k8s', name: 'Docker & Kubernetes', blurb: 'Containers, K8s architecture, workloads, networking, Helm and GitOps.', available: true },
+  { id: 'aws', name: 'AWS Cloud', blurb: 'Compute, storage, networking, IAM, event-driven patterns, Well-Architected.', available: true },
+  { id: 'observability', name: 'Observability', blurb: 'Distributed tracing, metrics, SLOs/error budgets, structured logging, incident response.', available: true },
+  { id: 'security', name: 'Security', blurb: 'OAuth 2.0/PKCE, JWT, OWASP API Top 10, secrets management, zero trust.', available: true },
+  { id: 'database', name: 'Database Internals', blurb: 'Indexes, query plans, N+1 fixes, connection pooling, Redis patterns.', available: true },
+  { id: 'cicd', name: 'CI/CD & DevOps', blurb: 'GitHub Actions, GitOps/ArgoCD, blue-green and canary deployments, DORA metrics.', available: true },
+  { id: 'java-concurrency', name: 'Java Concurrency', blurb: 'CompletableFuture, virtual threads, thread-safe collections, Project Reactor.', available: true },
+  { id: 'testing', name: 'Testing Strategy', blurb: 'Test pyramid, TDD, TestContainers, Pact contracts, chaos engineering.', available: true },
 ];
 
 export default function LearningHome() {

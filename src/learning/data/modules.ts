@@ -269,6 +269,23 @@ export const MODULE_HOMES: Record<string, ModuleHomeConfig> = {
     productionNote:
       'Based on switching to TDD which cut post-release bugs 60%, discovering circuit breaker misconfiguration during a game day, and implementing Pact can-i-deploy which prevented a schema change from breaking a dependent service in production.',
   },
+
+  python: {
+    id: 'python',
+    title: 'Python Engineering Lab',
+    tagline:
+      'Lists, dicts, sets, strings, sorting and DSA patterns — plus generators, decorators, OOP, concurrency, FastAPI, pytest, and clean production code.',
+    seoDescription:
+      'Python interview preparation — lists, dictionaries, sets, strings, sorting, duplicates, frequency counting, hash maps, stacks, queues, two pointers, binary search, trees, generators, decorators, iterators, exceptions, OOP, concurrency, FastAPI, pytest, and clean code.',
+    categoryCards: [
+      { category: 'Python Coding', blurb: 'Lists, dicts, sets, strings, sorting, duplicate detection, frequency counting, common elements.', icon: Terminal },
+      { category: 'Data Structures & Algorithms', blurb: 'Hash maps, stacks, queues, two pointers, binary search, basic trees, sliding window.', icon: Workflow },
+      { category: 'Python Fundamentals', blurb: 'Generators, decorators, iterators, exceptions, OOP, dataclasses, threading, asyncio, multiprocessing.', icon: Brain },
+      { category: 'Production Engineering', blurb: 'FastAPI, Pydantic, pytest, mocking, structured logging, retries, circuit breakers, clean architecture.', icon: Server },
+    ],
+    productionNote:
+      'Based on building FastAPI services with Pydantic validation, pytest + dependency-injected repository fakes, structured JSON logging with correlation IDs, and choosing asyncio for I/O-bound APIs while reserving multiprocessing for CPU-heavy report generation.',
+  },
 };
 
 /** Fallback icon for categories not listed in a module's config. */

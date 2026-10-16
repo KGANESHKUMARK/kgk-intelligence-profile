@@ -11,6 +11,15 @@ export const TECH_LABELS: Record<string, string> = {
   genai: 'GenAI',
   mlops: 'MLOps & AIOps',
   angular: 'Angular',
+  'docker-k8s': 'Docker & Kubernetes',
+  aws: 'AWS Cloud',
+  observability: 'Observability',
+  security: 'Security',
+  database: 'Database Internals',
+  cicd: 'CI/CD & DevOps',
+  'java-concurrency': 'Java Concurrency',
+  testing: 'Testing Strategy',
+  python: 'Python',
 };
 
 /** Primary language used for code blocks in each module (overridable per item via codeLanguage). */
@@ -23,13 +32,55 @@ const TECH_LANGUAGES: Record<string, string> = {
   genai: 'Python',
   mlops: 'Python',
   angular: 'TypeScript',
+  'docker-k8s': 'YAML',
+  aws: 'YAML',
+  observability: 'YAML',
+  security: 'Java',
+  database: 'SQL',
+  cicd: 'YAML',
+  'java-concurrency': 'Java',
+  testing: 'Java',
+  python: 'Python',
 };
 
 /** Ordered list of built tracks — drives the Learning Hub header switcher and route matching. */
-export const TRACK_IDS = ['java', 'spring-boot', 'system-design', 'kafka', 'react', 'angular', 'genai', 'mlops'] as const;
+export const TRACK_IDS = [
+  'java',
+  'spring-boot',
+  'system-design',
+  'kafka',
+  'react',
+  'angular',
+  'python',
+  'genai',
+  'mlops',
+  'docker-k8s',
+  'aws',
+  'observability',
+  'security',
+  'database',
+  'cicd',
+  'java-concurrency',
+  'testing',
+] as const;
 
 /** Modules rendered by the generic TechHome page / generic routes (Java, Kafka, React have bespoke pages). */
-export const GENERIC_TRACK_IDS: readonly string[] = ['spring-boot', 'system-design', 'genai', 'mlops', 'angular'];
+export const GENERIC_TRACK_IDS: readonly string[] = [
+  'spring-boot',
+  'system-design',
+  'genai',
+  'mlops',
+  'angular',
+  'python',
+  'docker-k8s',
+  'aws',
+  'observability',
+  'security',
+  'database',
+  'cicd',
+  'java-concurrency',
+  'testing',
+];
 
 export function techLabel(technology: string): string {
   return TECH_LABELS[technology] ?? technology;

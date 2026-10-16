@@ -77,6 +77,10 @@ import { testingTopics } from '../data/testing/topics';
 import { testingQuestions } from '../data/testing/questions';
 import { testingVisuals } from '../data/testing/visuals';
 import { testingGlossary } from '../data/testing/glossary';
+import { pythonTopics } from '../data/python/topics';
+import { pythonQuestions } from '../data/python/questions';
+import { pythonVisuals } from '../data/python/visuals';
+import { pythonGlossary } from '../data/python/glossary';
 import { ALIASES, normalizeTerm } from '../utils/normalize';
 import type { GlossaryTerm, InterviewQuestion, LearningTopic, LearningVisual } from '../types';
 
@@ -99,6 +103,7 @@ const allTopicsRaw = [
   ...cicdTopics,
   ...javaConcurrencyTopics,
   ...testingTopics,
+  ...pythonTopics,
 ];
 const allQuestionsRaw = [
   ...javaQuestions,
@@ -117,6 +122,7 @@ const allQuestionsRaw = [
   ...cicdQuestions,
   ...javaConcurrencyQuestions,
   ...testingQuestions,
+  ...pythonQuestions,
 ];
 const allVisualsRaw = [
   ...javaVisuals,
@@ -135,6 +141,7 @@ const allVisualsRaw = [
   ...cicdVisuals,
   ...javaConcurrencyVisuals,
   ...testingVisuals,
+  ...pythonVisuals,
 ];
 const allGlossaryRaw = [
   ...javaGlossary,
@@ -153,6 +160,7 @@ const allGlossaryRaw = [
   ...cicdGlossary,
   ...javaConcurrencyGlossary,
   ...testingGlossary,
+  ...pythonGlossary,
 ];
 
 const topicsById = new Map(allTopicsRaw.map((t) => [t.id, t]));
