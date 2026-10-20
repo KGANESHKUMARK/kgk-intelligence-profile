@@ -1,18 +1,19 @@
 /**
  * PROFILE CONTEXT — builds a compact, structured context string from the
- * existing data files that grounds the Hugging Face chat model to answer
- * ONLY about Ganesh's profile, skills, experience, projects, and the
- * Learning Hub topics (Java + Kafka).
+ * existing data files that grounds the chat model to answer ONLY about
+ * Ganesh's profile, skills, experience, projects, and Learning Hub topics.
  *
  * Design principles:
  *  - Never duplicate resume text — derive from the same data files the UI uses.
- *  - Keep it compact (~1500-2000 tokens) to stay within free-tier model limits.
- *  - Structure it so the model can cite where a skill was used (role/project).
- *  - Include Learning Hub topic titles + one-liners so the model knows what
+ *  - Keep it compact (~2900 tokens, down from ~4900) so Groq's free quota
+ *    covers ~2 req/min and Gemini fallback covers everything beyond that.
+ *  - Structure it so the model can cite where a skill was used (role/project)
+ *    AND the measurable outcome (impact metrics, awards).
+ *  - Include Learning Hub module + category names so the model knows what
  *    educational content it can explain.
  */
 
-import { profile } from '../data/profile';
+import { profile, awards, education } from '../data/profile';
 import { experience } from '../data/experience';
 import { projects } from '../data/projects';
 import { certifications } from '../data/certifications';
@@ -40,47 +41,69 @@ export function buildProfileContext(): string {
   lines.push('');
 
   // ── Experience ───────────────────────────────────────────────────────
+  // COMPACT: headlineTech (5 items) not the full tech list, 2 responsibilities,
+  // up to 5 achievements (they carry the measured metrics interviewers ask about).
   lines.push('=== WORK EXPERIENCE ===');
   for (const exp of experience) {
-    lines.push(`${exp.company} (${exp.period}) — ${exp.role}`);
-    lines.push(`  Domain: ${exp.domain}`);
-    lines.push(`  Summary: ${exp.summary}`);
-    lines.push(`  Tech: ${exp.technologies.join(', ')}`);
+    lines.push(`${exp.company} (${exp.period}) — ${exp.role} | ${exp.domain}`);
+    lines.push(`  ${exp.summary}`);
+    if (exp.responsibilities.length > 0) {
+      lines.push(`  Day-to-day: ${exp.responsibilities.slice(0, 2).join(' | ')}`);
+    }
     if (exp.achievements.length > 0) {
-      lines.push(`  Achievements: ${exp.achievements.slice(0, 3).join(' | ')}`);
+      lines.push(`  Results: ${exp.achievements.slice(0, 5).join(' | ')}`);
     }
-    // Link project names
-    const expProjects = projects.filter((p) => exp.projects.includes(p.id));
-    if (expProjects.length > 0) {
-      for (const p of expProjects) {
-        lines.push(`  Project: ${p.name} — ${p.blurb}`);
-        lines.push(`    Tech: ${p.technologies.join(', ')}`);
-      }
-    }
+    lines.push(`  Stack: ${exp.headlineTech.join(', ')}`);
     lines.push('');
   }
 
-  // ── Projects (condensed) ─────────────────────────────────────────────
-  lines.push('=== KEY PROJECTS ===');
+  // ── Projects with measured impact ────────────────────────────────────
+  // Flagship AI projects keep truncated problem+solution detail (that is where
+  // the RAG/agentic anecdotes live); other projects compress to blurb + impact.
+  const DEEP_PROJECTS = new Set(['gom', 'newton-client-reporting']);
+  const AI_TECH = /claude|bedrock|langchain|cortex|titan|guardrail|llm|rag|agentic|mcp|aiops|genai/i;
+  const truncate = (s: string, n: number) => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
+  lines.push('=== KEY PROJECTS (with measured outcomes) ===');
   for (const p of projects) {
-    lines.push(`${p.name} (${p.company}): ${p.blurb}`);
-    lines.push(`  Problem: ${p.problem}`);
-    lines.push(`  Solution: ${p.solution}`);
-    lines.push(`  Tech: ${p.technologies.join(', ')}`);
+    lines.push(`${p.name} (${p.company}, ${p.period}): ${p.blurb}`);
+    const isDeep = DEEP_PROJECTS.has(p.id);
+    if (isDeep) {
+      lines.push(`  Problem: ${truncate(p.problem, 220)}`);
+      lines.push(`  Solution: ${truncate(p.solution, 340)}`);
+    }
+    if (p.impact.length > 0) {
+      lines.push(`  IMPACT: ${p.impact.join(' | ')}`);
+    }
+    // Deep projects keep core stack + every AI-stack item (Bedrock, LangChain,
+    // MCP sit late in the list and a blind slice would silently drop them).
+    const tech = isDeep
+      ? [...new Set([...p.technologies.slice(0, 8), ...p.technologies.filter((t) => AI_TECH.test(t))])]
+      : p.technologies.slice(0, 10);
+    lines.push(`  Tech: ${tech.join(', ')}`);
+    lines.push('');
+  }
+
+  // ── Awards ────────────────────────────────────────────────────────────
+  if (awards.length > 0) {
+    lines.push('=== AWARDS ===');
+    for (const a of awards) {
+      lines.push(`${a.title} — ${a.detail} (${a.year}, ${a.issuer})`);
+    }
     lines.push('');
   }
 
   // ── Certifications ───────────────────────────────────────────────────
   lines.push('=== CERTIFICATIONS ===');
   for (const c of certifications) {
-    lines.push(`${c.name} (${c.issuer}) — ${c.demonstrates}`);
+    lines.push(`${c.name} (${c.issuer})`);
   }
   lines.push('');
 
   // ── Education ────────────────────────────────────────────────────────
   lines.push('=== EDUCATION ===');
-  lines.push('M.Tech in AI & ML, BITS Pilani (2025, 81%)');
-  lines.push('B.E. Electronics & Communication, Anna University (2013, 73%)');
+  for (const e of education) {
+    lines.push(`${e.degree}, ${e.institution} (${e.year}, ${e.score})`);
+  }
   lines.push('');
 
   // ── Learning Hub Topics ──────────────────────────────────────────────
@@ -101,7 +124,7 @@ export function buildProfileContext(): string {
 }
 
 // Memoised singleton — the profile context is static for the lifetime of the page.
-// Recomputing it on every chat request wastes ~1500 tokens worth of prompt budget.
+// Recomputing it on every chat request would waste ~3000 tokens per rebuild.
 let _cachedContext: string | null = null;
 export function getProfileContext(): string {
   if (!_cachedContext) _cachedContext = buildProfileContext();
@@ -113,8 +136,9 @@ export const SYSTEM_PROMPT = `You are an AI assistant embedded in Ganeshkumar Ka
 
 YOUR ROLE:
 - Help visitors learn about Ganesh's background, skills, experience, and projects.
-- Answer questions about the Learning Hub topics (Java, Spring Boot, System Design, Kafka, React, Angular, GenAI, MLOps & AIOps).
+- Answer questions about the Learning Hub topics (Java, Spring Boot, System Design, Kafka, React, Angular, Python, GenAI, MLOps & AIOps, Docker & Kubernetes, AWS, Observability, Security, Database Internals, CI/CD & DevOps, Java Concurrency, Testing Strategy).
 - Be a knowledgeable engineering educator when explaining technical concepts.
+- When a question matches Ganesh's real project work, cite the measured outcome (e.g., the NPF chatbot's 60% response-time improvement or the 80% predictive accuracy) instead of speaking generically.
 
 RULES:
 1. Answer ONLY using the provided profile and learning content. Never invent or fabricate information.
@@ -131,9 +155,11 @@ Remember: You represent Ganesh's professional brand. Every answer should make a 
 /** Suggested prompts shown in the empty chat state. */
 export const CHAT_SUGGESTIONS = [
   "What is Ganesh's role at Bank of Julius Baer?",
+  "Explain how Kafka is used in Ganesh's event-driven architecture",
   'Tell me about the Global Output Management platform',
   'How does Ganesh use GenAI and LLMs in production?',
+  "What is Ganesh's experience with LangChain and Amazon Bedrock?",
   'What did the Portfolio-IQ chatbot do and what award did it win?',
-  'Explain how Kafka is used in Ganesh\'s event-driven architecture',
-  'What is Ganesh\'s experience with LangChain and Amazon Bedrock?',
+  'Explain how RAG was used in the Newton client reporting system',
+  'What measurable results did Ganesh achieve at Bank of New York?',
 ];
